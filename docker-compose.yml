@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  pnpm:
+    image: rafaeltopasi/pnpm:latest
+    volumes:
+      - ./:/app
+    networks:
+      - app-network
+    stdin_open: true
+    tty: true
+  watch-client:
+    image: rafaeltopasi/watch-client:latest
+    container_name: pos-example
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./:/app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    name: pos-network
