@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useEffect, useState } from 'react'
+import React, { forwardRef, useEffect, useState } from 'react'
 import NumberFormat from 'react-number-format'
 import { TextField } from '@mui/material'
 
@@ -30,6 +30,7 @@ const CurrencyTextFieldComponent = ({ selected, handleInputChange, ...others }) 
 		if (value !== '' && selected.find((item) => item === true)) {
 			setValue('')
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [selected])
 	return (
 		<TextField

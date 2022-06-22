@@ -1,15 +1,16 @@
 import React from 'react'
-import NumberFormat from 'react-number-format'
-import { truncate } from 'lodash'
-import { Card, CardActionArea, CardMedia, CardContent, Stack, Typography, Box } from '@mui/material'
+import { truncate, upperFirst } from 'lodash'
+import { colors, Card, CardActionArea, CardMedia, CardContent, Stack, Typography, Box } from '@mui/material'
 import CheckCircle from '@mui/icons-material/CheckCircle'
+import MoreIcon from '@mui/icons-material/More'
 
-import { config } from '../config'
+import CurrencyTypographyComponent from './currency-typography.component'
+import placeholder from '../assets/placeholder.png'
 
-const MenuComponent = ({ item, selected, handleAddToCart }) => {
+const MenuItemComponent = ({ item, selected, handleMenuClick }) => {
 	return (
 		<Card
-			onClick={() => handleAddToCart(item)}
+			onClick={() => handleMenuClick(item)}
 			sx={{
 				height: '235px',
 				borderRadius: '1rem',
@@ -46,15 +47,22 @@ const MenuComponent = ({ item, selected, handleAddToCart }) => {
 						</Box>
 					</Box>
 				)}
-				<CardMedia component='img' height='150' image={item.image} alt={item.name} />
+				<CardMedia component='img' height='150' image={item.image || placeholder} alt={item.name} />
 				<CardContent>
 					<Stack spacing={2} direction='row'>
 						<Typography gutterBottom variant='body1' component='div' flexGrow={1} height='50px'>
 							{truncate(item.name, { length: 40 })}
 						</Typography>
-						<Typography gutterBottom variant='h6' component='div'>
-							<NumberFormat value={item.price} displayType={'text'} thousandSeparator={true} decimalScale={2} fixedDecimalScale={true} prefix={config.currency} />
-						</Typography>
+						<Box display='flex' alignItems='flex-end' flexDirection='column'>
+							<CurrencyTypographyComponent variant='h6' value={item.price} />
+							{item.sizes.length > 1 || item.sideDishes.length > 0 ? (
+								<MoreIcon sx={{ color: colors.grey[300] }} />
+							) : (
+								<Typography variant='body2' color={colors.grey[500]} fontSize='12px'>
+									{upperFirst(item.sizes[0])}
+								</Typography>
+							)}
+						</Box>
 					</Stack>
 				</CardContent>
 			</CardActionArea>
@@ -62,4 +70,4 @@ const MenuComponent = ({ item, selected, handleAddToCart }) => {
 	)
 }
 
-export default MenuComponent
+export default MenuItemComponent

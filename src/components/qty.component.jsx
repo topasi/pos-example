@@ -1,24 +1,15 @@
-import React, { useRef } from 'react'
+import React from 'react'
 import { ButtonGroup, Button } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 
-const QtyComponent = ({ item, index }) => {
-	const elQty = useRef([])
-	const handleIncreaseQtyChange = (index, max) => {
-		let qty = parseInt(elQty.current[index].innerHTML, 10)
-		elQty.current[index].innerHTML = Math.min(qty + 1, max)
-	}
-	const handleReduceQtyChange = (index) => {
-		let qty = parseInt(elQty.current[index].innerHTML, 10)
-		elQty.current[index].innerHTML = Math.max(qty - 1, 1)
-	}
+const QtyComponent = ({ item, index, elQty, handleIncreaseQtyChange, handleReduceQtyChange }) => {
 	return (
 		<ButtonGroup size='small' sx={{ height: '25px' }} disableElevation>
 			<Button
 				variant='contained'
 				aria-label='reduce'
-				onClick={() => handleReduceQtyChange(index)}
+				onClick={() => handleReduceQtyChange(item, index)}
 				sx={{
 					width: '30px',
 					minWidth: '0 !important',
@@ -41,7 +32,7 @@ const QtyComponent = ({ item, index }) => {
 			<Button
 				variant='contained'
 				aria-label='increase'
-				onClick={() => handleIncreaseQtyChange(index, item.max)}
+				onClick={() => handleIncreaseQtyChange(item, index)}
 				sx={{
 					width: '30px',
 					minWidth: '0 !important',

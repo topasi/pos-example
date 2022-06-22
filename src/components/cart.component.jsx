@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useState, useRef } from 'react'
 import { LeadingActions, SwipeableList, SwipeableListItem, SwipeAction, TrailingActions } from 'react-swipeable-list'
 import 'react-swipeable-list/dist/styles.css'
 import { colors, Paper, Box, List, ListItem, ListItemText, Typography, Stack, Divider, Badge, Collapse, Button } from '@mui/material'
@@ -8,23 +8,53 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 
-import { config } from '../config'
 import QtyComponent from './qty.component'
-import CurrencyTextFieldComponent from './currency-text-field.component'
 import CurrencyTypographyComponent from './currency-typography.component'
 import CashComponent from './cash.component'
-import { truncate } from 'lodash'
+import AlertComponent from './alert.component'
 
-const CartComponent = () => {
+const CartComponent = ({ items, handleCartUpdate }) => {
 	const [openOrder, setOpenOrder] = useState(true)
 	const [openCash, setOpenCash] = useState(true)
-	const [cash, setCash] = useState(0)
+	const [cartItems, setCartItems] = useState([])
+	const [cartCount, setCartCount] = useState(0)
+	const [cartSubtotal, setCartSubTotal] = useState(0)
+	const elQty = useRef([])
 	const handleOrderExpand = () => {
 		setOpenOrder(!openOrder)
 	}
 	const handleCashExpand = () => {
 		setOpenCash(!openCash)
 	}
+	const handleIncreaseQtyChange = useCallback(
+		(item, index) => {
+			const value = parseInt(elQty.current[index].innerHTML, 10)
+			const qty = Math.min(value + 1, item.stocks)
+			elQty.current[index].innerHTML = qty
+			item.qty = qty
+			console.log('qty', item.qty)
+			console.log('price', item.price)
+			handleCartUpdate(item)
+		},
+		[handleCartUpdate]
+	)
+	const handleReduceQtyChange = useCallback(
+		(item, index) => {
+			const value = parseInt(elQty.current[index].innerHTML, 10)
+			const qty = Math.max(value - 1, 1)
+			elQty.current[index].innerHTML = qty
+			item.qty = qty
+			console.log('qty', item.qty)
+			console.log('price', item.price)
+			handleCartUpdate(item)
+		},
+		[handleCartUpdate]
+	)
+	useEffect(() => {
+		setCartItems(items)
+		setCartCount(items.reduce((accumulator, item) => accumulator + item.qty, 0))
+		setCartSubTotal(items.reduce((accumulator, item) => accumulator + item.price * item.qty, 0))
+	}, [items])
 	const leadingActions = () => (
 		<LeadingActions>
 			<SwipeAction onClick={() => console.info('swipe action triggered')}>
@@ -78,7 +108,7 @@ const CartComponent = () => {
 									Cart
 								</Typography>
 								<Badge
-									badgeContent={4}
+									badgeContent={cartCount}
 									color='primary'
 									max={99}
 									sx={{
@@ -100,33 +130,25 @@ const CartComponent = () => {
 						</ListItem>
 						<Collapse in={openOrder} timeout='auto' unmountOnExit>
 							<List component='div' disablePadding>
-								{[
-									{
-										name: 'Bagnet',
-										qty: 1,
-										max: 5,
-										categories: [
-											{
-												name: 'Breakfast',
-											},
-											{
-												name: 'Dinner',
-											},
-										],
-									},
-								].map((item, key) => (
-									<ListItem key={key}>
-										<SwipeableList>
-											<SwipeableListItem leadingActions={leadingActions()} trailingActions={trailingActions()}>
-												<Stack spacing={2} direction='row' sx={{ width: '100%' }}>
-													<ListItemText primary={truncate(item.name, 20)} secondary={truncate(item.categories.map((category) => category.name).join(', '), 20)} sx={{ margin: 0 }} />
-													<QtyComponent item={item} index={key} />
-													<CurrencyTypographyComponent value={0} />
-												</Stack>
-											</SwipeableListItem>
-										</SwipeableList>
+								{cartItems.length > 0 ? (
+									cartItems.map((item, key) => (
+										<ListItem key={key}>
+											<SwipeableList>
+												<SwipeableListItem leadingActions={leadingActions()} trailingActions={trailingActions()}>
+													<Stack spacing={2} direction='row' sx={{ width: '100%' }}>
+														<ListItemText primary={item.name} secondary={item.categories} sx={{ margin: 0 }} />
+														<QtyComponent item={item} index={key} elQty={elQty} handleIncreaseQtyChange={handleIncreaseQtyChange} handleReduceQtyChange={handleReduceQtyChange} />
+														<CurrencyTypographyComponent value={item.price * item.qty} />
+													</Stack>
+												</SwipeableListItem>
+											</SwipeableList>
+										</ListItem>
+									))
+								) : (
+									<ListItem>
+										<AlertComponent severity='info'>There's no items available.</AlertComponent>
 									</ListItem>
-								))}
+								)}
 							</List>
 						</Collapse>
 					</List>
@@ -137,7 +159,7 @@ const CartComponent = () => {
 								<Typography variant='body2' fontWeight='700' flexGrow={1}>
 									SUBTOTAL
 								</Typography>
-								<CurrencyTypographyComponent value={0} fontWeight='700' />
+								<CurrencyTypographyComponent value={cartSubtotal} fontWeight='700' />
 							</Stack>
 						</ListItem>
 					</List>

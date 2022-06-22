@@ -1,14 +1,17 @@
 import React, { useState, useCallback } from 'react'
+import { truncate } from 'lodash'
 import { styled, Grid, Paper, Box, Tabs } from '@mui/material'
 import MuiTab from '@mui/material/Tab'
 
 import { categories, menu, discounts } from '../data'
 import useLocalStorage from '../hooks/useLocalStorage'
 import LayoutComponent from '../components/layout.component'
-import MenuComponent from '../components/menu.component'
+import MenuItemComponent from '../components/menu-item.component'
 import DiscountComponent from '../components/discount.component'
 import AlertComponent from '../components/alert.component'
 import CartComponent from '../components/cart.component'
+import MenuOptionComponent from '../components/menu-option.component'
+import SnackbarComponent from '../components/snackbar.component'
 
 const Tab = styled(MuiTab)(() => ({
 	padding: '2rem',
@@ -35,25 +38,82 @@ const a11yProps = (index) => {
 
 const TransactionPage = () => {
 	const [tabValue, setTabValue] = useState(0)
+	const [openMenuOption, setOpenMenuOption] = useState(false)
+	const [openOutofStock, setOpenOutofStock] = useState(false)
+	const [openAddToCart, setOpenAddToCart] = useState(false)
+	const [menuOption, setMenuOption] = useState({})
 	const [cartItems, setCartItems] = useLocalStorage('cartItems', [])
 	const handleTabChange = (_, newValue) => {
 		setTabValue(newValue)
 	}
 	const handleAddToCart = useCallback(
-		(item) => {
-			const cartMenu = {
-				id: item.id,
-				sideDish: [],
-				qty: 1,
-				discount: 0,
-				size: 'regular',
-			}
-			setCartItems((prev) => [...prev, cartMenu])
+		(items) => {
+			setCartItems(items)
+			console.log(items)
+			setOpenAddToCart(true)
+			setOpenMenuOption(false)
 		},
 		[setCartItems]
 	)
+	const handleCartUpdate = useCallback(
+		(item) => {
+			if (cartItems.find((cartItem) => cartItem.id === item.id)) {
+				const data = cartItems.map((cartItem) => {
+					if (cartItem.qty === cartItem.stocks) {
+						setOpenOutofStock(true)
+					}
+					if (cartItem.id === item.id && cartItem.qty < cartItem.stocks) {
+						cartItem.qty = item.qty
+						cartItem.price = item.price
+					}
+					return cartItem
+				})
+				handleAddToCart(data)
+			} else {
+				const categoryNames = categories
+					.filter((category) => item.categories.indexOf(category.id) > -1)
+					.map((category) => category.name)
+					.join(', ')
+				const data = [
+					...cartItems,
+					{
+						id: item.id,
+						name: truncate(item.name, 30),
+						price: item.price,
+						stocks: item.stocks,
+						qty: 1,
+						size: item.sizes[0],
+						categories: truncate(categoryNames, 30),
+					},
+				]
+				handleAddToCart(data)
+			}
+		},
+		[cartItems, setOpenOutofStock, handleAddToCart]
+	)
+	const handleMenuClick = (item) => {
+		if (item.sizes.length > 1 || item.sideDishes.length > 0) {
+			setMenuOption(item)
+			setOpenMenuOption(true)
+		} else {
+			handleCartUpdate(item)
+		}
+	}
+	const handleOutOfStockClose = () => {
+		setOpenOutofStock(false)
+	}
+	const handleAddToCartClose = () => {
+		setOpenAddToCart(false)
+	}
 	return (
 		<LayoutComponent>
+			<SnackbarComponent open={openOutofStock} onClose={handleOutOfStockClose} severity='warning'>
+				Out of Stock
+			</SnackbarComponent>
+			<SnackbarComponent open={openAddToCart} onClose={handleAddToCartClose} severity='success'>
+				Added to Cart
+			</SnackbarComponent>
+			<MenuOptionComponent menuOption={menuOption} openMenuOption={openMenuOption} closeMenuOption={() => setOpenMenuOption(false)} handleAddToCart={handleAddToCart} cartItems={cartItems} setOpenOutofStock={setOpenOutofStock} />
 			<Grid container spacing={3}>
 				<Grid item xs={12} lg={8} xl={9} alignItems='stretch'>
 					<Paper elevation={0} sx={{ height: '100%', borderRadius: '1rem' }}>
@@ -72,7 +132,7 @@ const TransactionPage = () => {
 									<Grid container spacing={3}>
 										{menu.map((item) => (
 											<Grid item xs={4} key={item.id}>
-												<MenuComponent item={item} selected={cartItems.find((cartItem) => cartItem.id === item.id)} handleAddToCart={handleAddToCart} />
+												<MenuItemComponent item={item} selected={cartItems.find((cartItem) => cartItem.id === item.id)} handleMenuClick={handleMenuClick} />
 											</Grid>
 										))}
 										{discounts.map((discount) => (
@@ -106,7 +166,7 @@ const TransactionPage = () => {
 												.filter((item) => item.categories.indexOf(category.id) > -1)
 												.map((item) => (
 													<Grid item xs={4} key={item.id}>
-														<MenuComponent item={item} selected={cartItems.find((cartItem) => cartItem.id === item.id)} handleAddToCart={handleAddToCart} />
+														<MenuItemComponent item={item} selected={cartItems.find((cartItem) => cartItem.id === item.id)} handleMenuClick={handleMenuClick} />
 													</Grid>
 												))}
 										</Grid>
@@ -119,7 +179,7 @@ const TransactionPage = () => {
 					</Paper>
 				</Grid>
 				<Grid item xl={3}>
-					<CartComponent />
+					<CartComponent items={cartItems} handleCartUpdate={handleCartUpdate} />
 				</Grid>
 			</Grid>
 		</LayoutComponent>
