@@ -15,6 +15,10 @@ export const categories = [
 		id: 1004,
 		name: 'Dinner',
 	},
+	{
+		id: 1005,
+		name: 'Side Dishes',
+	},
 ]
 
 export const menu = [
@@ -25,7 +29,7 @@ export const menu = [
 		image: '',
 		price: 530.0,
 		stocks: 2,
-		categories: [1002, 1004],
+		categories: [1002, 1004, 1005],
 		sizes: ['regular'],
 		sideDishes: [],
 	},
@@ -80,5 +84,12 @@ export const discounts = [
 		id: 3001,
 		name: 'Senior Citizen Discount',
 		percentage: 20,
+		isTaxExempted: true,
+	},
+	{
+		id: 3002,
+		name: 'All Day Disounts',
+		percentage: 10,
+		isTaxExempted: false,
 	},
 ]

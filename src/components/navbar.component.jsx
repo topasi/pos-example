@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useTheme, useMediaQuery, styled, colors, Grid, Toolbar, Button, Box, Stack, InputAdornment, TextField } from '@mui/material'
+import { useTheme, useMediaQuery, styled, colors, Grid, Toolbar, Button, Box, Stack, InputAdornment, TextField, Avatar } from '@mui/material'
 import MuiAppBar from '@mui/material/AppBar'
 import MenuIcon from '@mui/icons-material/Menu'
 import SearchIcon from '@mui/icons-material/Search'
@@ -179,19 +179,23 @@ const NavbarComponent = ({ drawerWidth, openDrawer, handleClickDrawer }) => {
 						</Stack>
 					</Grid>
 					<Grid item order={{ xs: 3 }}>
-						<IconButton
-							disableRipple
-							selected={openSearchIconButton}
-							onClick={handleOpenSearchBox}
-							sx={{
-								display: {
-									xs: 'flex',
-									md: 'none',
-								},
-							}}
-						>
-							<SearchIcon />
-						</IconButton>
+						<Stack spacing={2} direction='row' alignItems='center'>
+							<IconButton
+								disableRipple
+								selected={openSearchIconButton}
+								onClick={handleOpenSearchBox}
+								sx={{
+									display: {
+										xs: 'flex',
+										md: 'none',
+									},
+									flexGrow: 1,
+								}}
+							>
+								<SearchIcon />
+							</IconButton>
+							<Avatar sx={{ backgroundColor: 'background.default', color: 'primary.main' }}>R</Avatar>
+						</Stack>
 					</Grid>
 				</Grid>
 			</Toolbar>

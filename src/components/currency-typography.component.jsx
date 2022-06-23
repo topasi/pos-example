@@ -7,7 +7,7 @@ import { config } from '../config'
 const CurrencyTypographyComponent = ({ value, ...others }) => {
 	return (
 		<Typography variant='body2' {...others}>
-			<NumberFormat value={value} displayType={'text'} thousandSeparator decimalScale={2} fixedDecimalScale prefix={config.currency} />
+			<NumberFormat value={value} displayType={'text'} thousandSeparator decimalScale={2} fixedDecimalScale allowNegative prefix={config.currency} />
 		</Typography>
 	)
 }

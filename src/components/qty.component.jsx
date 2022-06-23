@@ -3,7 +3,7 @@ import { ButtonGroup, Button } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 
-const QtyComponent = ({ item, index, elQty, handleIncreaseQtyChange, handleReduceQtyChange }) => {
+const QtyComponent = ({ item, index, handleElQty, handleIncreaseQtyChange, handleReduceQtyChange }) => {
 	return (
 		<ButtonGroup size='small' sx={{ height: '25px' }} disableElevation>
 			<Button
@@ -27,7 +27,7 @@ const QtyComponent = ({ item, index, elQty, handleIncreaseQtyChange, handleReduc
 				}}
 				disableElevation
 			>
-				<span ref={(el) => elQty.current.push(el)}>{item.qty}</span>
+				<span ref={(el) => handleElQty(el)}>{item.qty}</span>
 			</Button>
 			<Button
 				variant='contained'

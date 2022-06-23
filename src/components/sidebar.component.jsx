@@ -8,6 +8,7 @@ import PercentIcon from '@mui/icons-material/Percent'
 import MenuBookIcon from '@mui/icons-material/MenuBook'
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import FoodBankIcon from '@mui/icons-material/FoodBank'
+import SettingsIcon from '@mui/icons-material/Settings'
 
 import { router } from '../router'
 
@@ -95,6 +96,14 @@ const SidebarComponent = ({ drawerWidth, openDrawer }) => {
 								<MenuBookIcon />
 							</ListItemIcon>
 							<ListItemText primary={router.orders.name} />
+						</ListItemButton>
+					</ListItem>
+					<ListItem>
+						<ListItemButton component={Link} to={router.settings.path} selected={location.pathname.indexOf(router.settings.path) > -1}>
+							<ListItemIcon>
+								<SettingsIcon />
+							</ListItemIcon>
+							<ListItemText primary={router.settings.name} />
 						</ListItemButton>
 					</ListItem>
 				</List>

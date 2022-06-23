@@ -3,7 +3,7 @@ import { truncate } from 'lodash'
 import { styled, colors, Box, Typography, Grid, List, ListItem, ListItemAvatar, ListItemText, Avatar, Checkbox, Stack, Button, Divider } from '@mui/material'
 import MuiToggleButton from '@mui/material/ToggleButton'
 
-import { categories, menu } from '../data'
+import { menu } from '../data'
 import ModalComponent from './modal.component'
 import CurrencyTypographyComponent from './currency-typography.component'
 
@@ -14,75 +14,25 @@ const ToggleButton = styled(MuiToggleButton)(({ value, theme }) => ({
 	},
 }))
 
-const MenuOptionComponent = ({ menuOption, openMenuOption, closeMenuOption, handleAddToCart, cartItems, setOpenOutofStock }) => {
+const MenuOptionComponent = ({ menuOption, openMenuOption, closeMenuOption, handleCartUpdate }) => {
 	const [sizes, setSizes] = useState([])
 	const [sideDishes, setSideDishes] = useState([])
-	const [selected, setSelected] = useState([])
-	const [checked, setChecked] = useState([])
-	const handleButtonChange = (index) => {
-		setSelected((prev) => prev.map((item, key) => (key === index ? !item : false)))
-	}
-	const handleToggle = (value) => () => {
-		const currentIndex = checked.indexOf(value)
-		const newChecked = [...checked]
+	const [selectedSize, setSelectedSize] = useState([])
+	const [checkedMenuOption, setCheckedMenuOption] = useState([])
+	const handleCheckedMenuOptionChange = (value) => {
+		const currentIndex = checkedMenuOption.indexOf(value)
+		const newChecked = [...checkedMenuOption]
 		if (currentIndex === -1) {
 			newChecked.push(value)
 		} else {
 			newChecked.splice(currentIndex, 1)
 		}
-		setChecked(newChecked)
-	}
-	const handleApplyClick = () => {
-		let index = -1
-		selected.map((item, key) => {
-			if (item === true) {
-				index = key
-			}
-			return item
-		})
-		if (cartItems.find((cartItem) => cartItem.id === menuOption.id)) {
-			const data = cartItems.map((cartItem) => {
-				if (cartItem.qty === cartItem.stocks) {
-					setOpenOutofStock(true)
-				}
-				if (cartItem.size !== menuOption.sizes[index]) {
-					cartItem.size = menuOption.sizes[index]
-				}
-				if (cartItem.id === menuOption.id && cartItem.qty < cartItem.stocks && cartItem.size === menuOption.sizes[index]) {
-					cartItem.qty++
-				}
-				return cartItem
-			})
-			handleAddToCart(data)
-		} else {
-			const data = [...cartItems].concat(
-				menu
-					.filter((item) => {
-						return item.id === menuOption.id || checked.indexOf(item.id) > -1
-					})
-					.map((item) => {
-						const categoryNames = categories
-							.filter((category) => item.categories.indexOf(category.id) > -1)
-							.map((category) => category.name)
-							.join(', ')
-						return {
-							id: item.id,
-							name: truncate(item.name, 30),
-							price: item.price,
-							stocks: item.stocks,
-							qty: 1,
-							size: menuOption.sizes[index],
-							categories: truncate(categoryNames, 30),
-						}
-					})
-			)
-			handleAddToCart(data)
-		}
+		setCheckedMenuOption(newChecked)
 	}
 	useEffect(() => {
 		if (menuOption?.sizes) {
 			setSizes(menuOption.sizes)
-			setSelected(menuOption.sizes.map(() => false))
+			setSelectedSize(menuOption.sizes.map(() => false))
 		}
 		if (menuOption?.sideDishes) {
 			setSideDishes(
@@ -104,9 +54,9 @@ const MenuOptionComponent = ({ menuOption, openMenuOption, closeMenuOption, hand
 							<Grid item xs={12 / sizes.length} key={key}>
 								<ToggleButton
 									value={size}
-									selected={selected[key]}
+									selected={selectedSize[key]}
 									onChange={() => {
-										handleButtonChange(key)
+										setSelectedSize((prev) => prev.map((item, index) => (index === key ? !item : false)))
 									}}
 									sx={{
 										borderRadius: '.5rem',
@@ -134,7 +84,19 @@ const MenuOptionComponent = ({ menuOption, openMenuOption, closeMenuOption, hand
 								secondaryAction={
 									<Stack spacing={1} direction='row' alignItems='center'>
 										<CurrencyTypographyComponent value={sideDish.price} />
-										<Checkbox edge='end' onChange={handleToggle(sideDish.id)} checked={checked.indexOf(sideDish.id) !== -1} inputProps={{ 'aria-labelledby': `checkbox-menu-${sideDish.id}` }} sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }} />
+										<Checkbox
+											edge='end'
+											onChange={() => {
+												handleCheckedMenuOptionChange(sideDish.id)
+											}}
+											checked={checkedMenuOption.indexOf(sideDish.id) !== -1}
+											inputProps={{
+												'aria-labelledby': `checkbox-menu-${sideDish.id}`,
+											}}
+											sx={{
+												'& .MuiSvgIcon-root': { fontSize: 28 },
+											}}
+										/>
 									</Stack>
 								}
 								sx={{
@@ -176,7 +138,7 @@ const MenuOptionComponent = ({ menuOption, openMenuOption, closeMenuOption, hand
 					color='primary'
 					size='large'
 					fullWidth
-					disabled={!selected.find((item) => item === true)}
+					disabled={!selectedSize.find((item) => item === true)}
 					disableRipple
 					disableElevation
 					sx={{
@@ -184,7 +146,7 @@ const MenuOptionComponent = ({ menuOption, openMenuOption, closeMenuOption, hand
 						borderRadius: '.5rem',
 						color: 'background.default',
 					}}
-					onClick={handleApplyClick}
+					onClick={() => handleCartUpdate(menuOption, selectedSize.indexOf(true), checkedMenuOption)}
 				>
 					Apply
 				</Button>

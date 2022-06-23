@@ -3,7 +3,7 @@ import { colors, Stack, Typography } from '@mui/material'
 
 import LayoutComponent from '../components/layout.component'
 
-const NotFoundPage = () => {
+const DashboardPage = () => {
 	return (
 		<LayoutComponent>
 			<Stack spacung={0} alignItems='center' justifyContent='center' width='100%'>
@@ -16,7 +16,7 @@ const NotFoundPage = () => {
 						color: colors.grey[400],
 					}}
 				>
-					404
+					503
 				</Typography>
 				<Typography
 					variant='h3'
@@ -26,7 +26,7 @@ const NotFoundPage = () => {
 						color: colors.grey[400],
 					}}
 				>
-					Page is not found
+					Page is under construction
 				</Typography>
 				<Typography
 					variant='h6'
@@ -53,4 +53,4 @@ const NotFoundPage = () => {
 	)
 }
 
-export default NotFoundPage
+export default DashboardPage

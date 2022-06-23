@@ -24,7 +24,7 @@ const NumberFormatCustom = forwardRef(function NumberFormatCustom(props, ref) {
 	)
 })
 
-const CurrencyTextFieldComponent = ({ selected, handleInputChange, ...others }) => {
+const CurrencyTextFieldComponent = ({ selected, cart, handleInputChange, ...others }) => {
 	const [value, setValue] = useState('')
 	useEffect(() => {
 		if (value !== '' && selected.find((item) => item === true)) {
@@ -32,6 +32,9 @@ const CurrencyTextFieldComponent = ({ selected, handleInputChange, ...others }) 
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [selected])
+	useEffect(() => {
+		setValue('')
+	}, [cart])
 	return (
 		<TextField
 			variant='standard'

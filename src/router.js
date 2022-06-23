@@ -17,11 +17,15 @@ const router = {
 	},
 	transaction: {
 		name: 'Transaction',
-		path: '/',
+		path: '/transaction',
 	},
 	orders: {
 		name: 'Orders',
 		path: '/orders',
+	},
+	settings: {
+		name: 'Settings',
+		path: '/settings',
 	},
 	error: {
 		path: '*',
