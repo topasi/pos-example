@@ -1,12 +1,15 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useTheme, useMediaQuery, styled, colors, Grid, Toolbar, Button, Box, Stack, InputAdornment, TextField, Avatar } from '@mui/material'
 import MuiAppBar from '@mui/material/AppBar'
 import MenuIcon from '@mui/icons-material/Menu'
 import SearchIcon from '@mui/icons-material/Search'
 import CloseIcon from '@mui/icons-material/Close'
 
+import { router } from '../router'
 import brandFullWhite from '../assets/brand-full-white.png'
+import useCategories from '../hooks/useCategories'
+import useDiscounts from '../hooks/useDiscounts'
 
 const IconButton = styled(Button)(({ selected, theme }) => ({
 	minWidth: 0,
@@ -96,13 +99,24 @@ const AppBar = styled(MuiAppBar)(({ theme, open, width }) => ({
 }))
 
 const NavbarComponent = ({ drawerWidth, openDrawer, handleClickDrawer }) => {
+	const location = useLocation()
 	const theme = useTheme()
 	const matches = useMediaQuery(theme.breakpoints.down('md'))
 	const [openSearchBox, setOpenSearchBox] = useState(false)
 	const [openSearchIconButton, setOpenSearchIconButton] = useState(false)
+	const { handleSearchCategory } = useCategories()
+	const { handleSearchDiscount } = useDiscounts()
 	const handleOpenSearchBox = () => {
 		setOpenSearchBox((prev) => !prev)
 		setOpenSearchIconButton((prev) => !prev)
+	}
+	const handleSearchBox = (keyword) => {
+		if (router.categories.path === location.pathname) {
+			handleSearchCategory(keyword)
+		}
+		if (router.discounts.path === location.pathname) {
+			handleSearchDiscount(keyword)
+		}
 	}
 	return (
 		<AppBar position='fixed' open={openDrawer} width={drawerWidth} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
@@ -137,63 +151,68 @@ const NavbarComponent = ({ drawerWidth, openDrawer, handleClickDrawer }) => {
 							<IconButton disableRipple selected={openDrawer} onClick={handleClickDrawer}>
 								<MenuIcon />
 							</IconButton>
-							<SearchBox open={openSearchBox}>
-								<SearchField
-									label=''
-									placeholder='Search'
-									InputProps={{
-										startAdornment: (
-											<InputAdornment position='start' sx={{ color: 'background.default' }}>
-												<SearchIcon />
-											</InputAdornment>
-										),
-										endAdornment: (
-											<InputAdornment
-												position='end'
-												sx={{
-													display: {
-														xs: 'flex',
-														md: 'none',
-													},
-													color: 'background.default',
-												}}
-											>
-												<IconButton
-													disableRipple
-													selected={openSearchIconButton}
-													onClick={handleOpenSearchBox}
+							{[router.dashboard.path, router.settings.path].indexOf(location.pathname) === -1 && (
+								<SearchBox open={openSearchBox}>
+									<SearchField
+										label=''
+										placeholder='Search'
+										InputProps={{
+											startAdornment: (
+												<InputAdornment position='start' sx={{ color: 'background.default' }}>
+													<SearchIcon />
+												</InputAdornment>
+											),
+											endAdornment: (
+												<InputAdornment
+													position='end'
 													sx={{
-														backgroundColor: 'background.default',
-														color: 'primary.main',
+														display: {
+															xs: 'flex',
+															md: 'none',
+														},
+														color: 'background.default',
 													}}
 												>
-													<CloseIcon />
-												</IconButton>
-											</InputAdornment>
-										),
-									}}
-									fullWidth
-									open={openSearchBox}
-								/>
-							</SearchBox>
+													<IconButton
+														disableRipple
+														selected={openSearchIconButton}
+														onClick={handleOpenSearchBox}
+														sx={{
+															backgroundColor: 'background.default',
+															color: 'primary.main',
+														}}
+													>
+														<CloseIcon />
+													</IconButton>
+												</InputAdornment>
+											),
+										}}
+										fullWidth
+										open={openSearchBox}
+										onKeyUp={(e) => handleSearchBox(e.target.value)}
+									/>
+								</SearchBox>
+							)}
 						</Stack>
 					</Grid>
 					<Grid item order={{ xs: 3 }}>
 						<Stack spacing={2} direction='row' alignItems='center'>
-							<IconButton
-								disableRipple
-								selected={openSearchIconButton}
-								onClick={handleOpenSearchBox}
-								sx={{
-									display: {
-										xs: 'flex',
-										md: 'none',
-									},
-									flexGrow: 1,
-								}}
-							>
-								<SearchIcon />
-							</IconButton>
+							{[router.dashboard.path, router.settings.path].indexOf(location.pathname) === -1 && (
+								<IconButton
+									disableRipple
+									selected={openSearchIconButton}
+									onClick={handleOpenSearchBox}
+									sx={{
+										display: {
+											xs: 'flex',
+											md: 'none',
+										},
+										flexGrow: 1,
+									}}
+								>
+									<SearchIcon />
+								</IconButton>
+							)}
 							<Avatar sx={{ backgroundColor: 'background.default', color: 'primary.main' }}>R</Avatar>
 						</Stack>
 					</Grid>

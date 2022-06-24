@@ -82,6 +82,21 @@ const DiscountComponent = ({ cart, discount, selected, handleAddDiscount, handle
 				<Typography variant='h6' color='background.default' textAlign='center'>
 					{truncate(discount.name, { length: 40 })}
 				</Typography>
+				{discount.isTaxExempted && (
+					<Typography
+						textAlign='center'
+						fontWeight='700'
+						sx={{
+							position: 'absolute',
+							bottom: '1rem',
+							fontSize: '12px',
+							color: colors.yellow[500],
+							letterSpacing: '5px',
+						}}
+					>
+						TAX EXEMPTED
+					</Typography>
+				)}
 			</CardContent>
 		</Card>
 	)

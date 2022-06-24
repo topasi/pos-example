@@ -1,4 +1,5 @@
 import React, { useState, useEffect, createContext } from 'react'
+import { lowerCase } from 'lodash'
 import { ref, set, get, remove, query, orderByChild, equalTo } from 'firebase/database'
 import moment from 'moment'
 import { v4 as uuidv4 } from 'uuid'
@@ -16,6 +17,7 @@ export const CategoriesProvider = ({ children }) => {
 		message: '',
 	})
 	const [categories, setCategories] = useState({})
+	const [keyword, setKeyword] = useState('')
 	const handleError = (e) => {
 		console.log(e)
 		setSnackbar({
@@ -77,21 +79,41 @@ export const CategoriesProvider = ({ children }) => {
 			})
 			.catch(handleError)
 	}
+	const handleSearchCategory = (keyword) => {
+		setKeyword(lowerCase(keyword))
+	}
 	useEffect(() => {
 		get(query(ref(db, router.categories.path), orderByChild('createdAt')))
 			.then((snapshot) => {
 				const data = []
 				if (snapshot.exists()) {
-					snapshot.forEach((snap) => {
-						data.push(snap.val())
-					})
+					if (keyword) {
+						snapshot.forEach((snap) => {
+							const value = snap.val()
+							Object.keys(value)
+								.filter((field) => {
+									return ['createdAt', 'updatedAt'].indexOf(field) === -1
+								})
+								.forEach((field) => {
+									const isAlreadyInData = data.find((item) => item.id === value.id)
+									const isMatchKeyword = lowerCase(value[field]).match(keyword)
+									if (!isAlreadyInData && isMatchKeyword) {
+										data.push(value)
+									}
+								})
+						})
+					} else {
+						snapshot.forEach((snap) => {
+							data.push(snap.val())
+						})
+					}
 				}
 				setCategories(data)
 			})
 			.catch(handleError)
-	}, [categories])
+	}, [categories, keyword])
 	return (
-		<CategoriesContext.Provider value={{ categories, handleCreateCategory, handleDeleteCategory }}>
+		<CategoriesContext.Provider value={{ categories, handleCreateCategory, handleDeleteCategory, handleSearchCategory }}>
 			<SnackbarComponent open={snackbar.open} onClose={handleSnackbar} severity={snackbar.severity}>
 				{snackbar.message}
 			</SnackbarComponent>
