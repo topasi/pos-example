@@ -1,25 +1,18 @@
-import React from 'react'
+import React, { useState } from 'react'
 import * as yup from 'yup'
 import { useFormik } from 'formik'
-import { styled, colors, Stack, Grid, Box, Paper, InputLabel, Button, Typography, InputAdornment } from '@mui/material'
-import MuiTextField from '@mui/material/TextField'
+import { colors, Stack, Grid, Box, Paper, InputLabel, Button, Typography, InputAdornment, FormGroup, FormControl, FormHelperText, OutlinedInput } from '@mui/material'
 
+import useSettings from '../hooks/useSettings'
 import LayoutComponent from '../components/layout.component'
 
-const TextField = styled(MuiTextField)(({ theme }) => ({
-	'& .MuiOutlinedInput-root': {
-		borderRadius: '.5rem',
-	},
-	'& .MuiFormHelperText-root': {
-		marginLeft: 0,
-	},
-}))
-
 const SettingsPage = () => {
+	const { settings, handleCreateSettings } = useSettings()
+	const [disabled, setDisabled] = useState(false)
 	const initialValues = {
-		currency: '',
-		vat: '',
-		serviceCharge: '',
+		currency: settings.currency,
+		vat: settings.vat,
+		serviceCharge: settings.serviceCharge,
 	}
 	const validationSchema = yup.object().shape({
 		currency: yup.string().typeError('The currency is invalid').required('The currency is required'),
@@ -29,8 +22,10 @@ const SettingsPage = () => {
 	const formik = useFormik({
 		initialValues: initialValues,
 		validationSchema: validationSchema,
+		enableReinitialize: true,
 		onSubmit(values) {
-			console.log(values)
+			setDisabled(true)
+			handleCreateSettings(values, setDisabled)
 		},
 	})
 	return (
@@ -39,55 +34,60 @@ const SettingsPage = () => {
 				<Grid container>
 					<Grid item xs={12} sm={12} md={12} lg={8} xl={6}>
 						<Paper elevation={0} sx={{ padding: '2rem', borderRadius: '1rem' }}>
-							<Typography variant='h4' marginBottom='1.5rem' color={colors.grey[700]}>
+							<Typography variant='h5' marginBottom='1.5rem' color={colors.grey[700]}>
 								Settings
 							</Typography>
-							<form onSubmit={formik.handleSubmit}>
-								<Box paddingBottom='1rem'>
-									<InputLabel htmlFor='currency' sx={{ marginBottom: '.25rem' }}>
-										Currency *
-									</InputLabel>
-									<TextField id='currency' variant='outlined' name='currency' value={formik.values.currency} onChange={formik.handleChange} error={formik.touched.currency && Boolean(formik.errors.currency)} helperText={formik.touched.currency && formik.errors.currency} fullWidth />
-								</Box>
-								<Box paddingBottom='1rem'>
-									<InputLabel htmlFor='vat' sx={{ marginBottom: '.25rem' }}>
-										VAT Percentage *
-									</InputLabel>
-									<TextField
-										id='vat'
-										variant='outlined'
-										name='vat'
-										value={formik.values.vat}
-										onChange={formik.handleChange}
-										error={formik.touched.vat && Boolean(formik.errors.vat)}
-										helperText={formik.touched.vat && formik.errors.vat}
-										InputProps={{
-											endAdornment: <InputAdornment position='end'>%</InputAdornment>,
-										}}
-										fullWidth
-									/>
-								</Box>
-								<Box paddingBottom='1.5rem'>
-									<InputLabel htmlFor='serviceCharge' sx={{ marginBottom: '.25rem' }}>
-										Service Charge *
-									</InputLabel>
-									<TextField id='serviceCharge' variant='outlined' name='serviceCharge' value={formik.values.serviceCharge} onChange={formik.handleChange} error={formik.touched.serviceCharge && Boolean(formik.errors.serviceCharge)} helperText={formik.touched.serviceCharge && formik.errors.serviceCharge} fullWidth />
-								</Box>
-								<Button
-									variant='contained'
-									size='large'
-									type='submit'
-									disableElevation
-									sx={{
-										minWidth: '150px',
-										minHeight: '50px',
-										borderRadius: '.5rem',
-										color: 'background.default',
-									}}
-								>
-									Save
-								</Button>
-							</form>
+							<Box component='form' noValidate autoComplete='off' onSubmit={formik.handleSubmit}>
+								<Stack spacing={2}>
+									<FormGroup>
+										<InputLabel htmlFor='name' sx={{ marginBottom: '.25rem' }}>
+											Currency Symbol *
+										</InputLabel>
+										<FormControl required error={formik.touched.currency && Boolean(formik.errors.currency)} variant='standard' fullWidth>
+											<OutlinedInput value={formik.values.currency} onChange={formik.handleChange} id='currency' sx={{ borderRadius: '.5rem' }} />
+											<FormHelperText>{formik.touched.currency && formik.errors.currency}</FormHelperText>
+										</FormControl>
+									</FormGroup>
+									<FormGroup>
+										<InputLabel htmlFor='name' sx={{ marginBottom: '.25rem' }}>
+											VAT *
+										</InputLabel>
+										<FormControl required error={formik.touched.vat && Boolean(formik.errors.vat)} variant='standard' fullWidth>
+											<OutlinedInput value={formik.values.vat} onChange={formik.handleChange} id='vat' endAdornment={<InputAdornment position='end'>%</InputAdornment>} sx={{ borderRadius: '.5rem' }} />
+											<FormHelperText>{formik.touched.vat && formik.errors.vat}</FormHelperText>
+										</FormControl>
+									</FormGroup>
+									<FormGroup>
+										<InputLabel htmlFor='name' sx={{ marginBottom: '.25rem' }}>
+											Service Charge *
+										</InputLabel>
+										<FormControl required error={formik.touched.serviceCharge && Boolean(formik.errors.serviceCharge)} variant='standard' fullWidth>
+											<OutlinedInput value={formik.values.serviceCharge} onChange={formik.handleChange} id='serviceCharge' sx={{ borderRadius: '.5rem' }} />
+											<FormHelperText>{formik.touched.serviceCharge && formik.errors.serviceCharge}</FormHelperText>
+										</FormControl>
+									</FormGroup>
+									<FormGroup>
+										<Button
+											variant='contained'
+											size='large'
+											type='submit'
+											disableElevation
+											disabled={disabled}
+											sx={{
+												width: {
+													sm: '100%',
+													md: '150px',
+												},
+												minHeight: '50px',
+												borderRadius: '.5rem',
+												color: 'background.default',
+											}}
+										>
+											Save
+										</Button>
+									</FormGroup>
+								</Stack>
+							</Box>
 						</Paper>
 					</Grid>
 				</Grid>

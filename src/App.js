@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 import { router } from './router'
-import DashboardPage from './pages/dashboard.page'
 import TransactionPage from './pages/transaction.page'
 import CategoriesPage from './pages/categories.page'
 import MenuPage from './pages/menu.page'
@@ -9,12 +8,13 @@ import DiscountsPage from './pages/discounts.page'
 import OrdersPage from './pages/orders.page'
 import SettingsPage from './pages/settings.page'
 import NotFoundPage from './pages/404.page'
+import ServiceUnavailablePage from './pages/503.page'
 
 function App() {
 	return (
 		<BrowserRouter>
 			<Routes>
-				<Route path={router.dashboard.path} element={<DashboardPage />} />
+				<Route path={router.dashboard.path} element={<ServiceUnavailablePage />} />
 				<Route path={router.categories.path} element={<CategoriesPage />} />
 				<Route path={router.menu.path} element={<MenuPage />} />
 				<Route path={router.discounts.path} element={<DiscountsPage />} />

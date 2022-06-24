@@ -4,7 +4,7 @@ import { colors, Card, CardContent, Typography, Box, IconButton } from '@mui/mat
 import CheckCircle from '@mui/icons-material/CheckCircle'
 import CloseIcon from '@mui/icons-material/Close'
 
-const DiscountComponent = ({ cart, discount, selected, handleAddDiscount, handleOpenDeleteDiscountDialog }) => {
+const DiscountComponent = ({ cart, discount, selected, handleAddDiscount, handleOpenDeleteDialog }) => {
 	return (
 		<Card
 			onClick={() => {
@@ -61,11 +61,11 @@ const DiscountComponent = ({ cart, discount, selected, handleAddDiscount, handle
 					},
 				}}
 			>
-				{handleOpenDeleteDiscountDialog && (
+				{handleOpenDeleteDialog && (
 					<IconButton
 						aria-label='delete'
 						size='small'
-						onClick={handleOpenDeleteDiscountDialog}
+						onClick={() => handleOpenDeleteDialog(discount.id)}
 						sx={{
 							position: 'absolute',
 							right: 0,

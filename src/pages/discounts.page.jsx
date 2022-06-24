@@ -1,38 +1,37 @@
 import React, { useState, useCallback } from 'react'
 import * as yup from 'yup'
 import { useFormik } from 'formik'
-import { styled, colors, Stack, Grid, Box, Paper, InputLabel, Button, Typography, InputAdornment } from '@mui/material'
-import MuiTextField from '@mui/material/TextField'
+import { colors, Stack, Grid, Box, Paper, InputLabel, Button, Typography, InputAdornment, FormGroup, FormControl, FormControlLabel, FormHelperText, Checkbox, OutlinedInput } from '@mui/material'
 
-import { discounts } from '../data'
 import LayoutComponent from '../components/layout.component'
 import DiscountComponent from '../components/discount.component'
 import DialogComponent from '../components/dialog.component'
-
-const TextField = styled(MuiTextField)(({ theme }) => ({
-	'& .MuiOutlinedInput-root': {
-		borderRadius: '.5rem',
-	},
-	'& .MuiFormHelperText-root': {
-		marginLeft: 0,
-	},
-}))
+import AlertComponent from '../components/alert.component'
+import useDiscounts from '../hooks/useDiscounts'
 
 const DiscountsPage = () => {
-	const [openDeleteDiscountDialog, setOpenDeleteDiscountDialog] = useState(false)
-	const handleDeleteDialog = useCallback(() => {
-		setOpenDeleteDiscountDialog(false)
-		alert()
-	}, [])
-	const handleOpenDeleteDiscountDialog = useCallback(() => {
-		setOpenDeleteDiscountDialog(true)
-	}, [setOpenDeleteDiscountDialog])
-	const handleCloseDeleteDiscountDialog = useCallback(() => {
-		setOpenDeleteDiscountDialog(false)
-	}, [setOpenDeleteDiscountDialog])
+	const { discounts, handleCreateDiscount, handleDeleteDiscount } = useDiscounts()
+	const [disabled, setDisabled] = useState(false)
+	const [deleteDialog, setDeleteDialog] = useState({
+		open: false,
+		id: '',
+	})
+	const handleOpenDeleteDialog = useCallback(
+		(id) => {
+			setDeleteDialog({
+				open: true,
+				id,
+			})
+		},
+		[setDeleteDialog]
+	)
+	const handleCloseDeleteDialog = useCallback(() => {
+		setDeleteDialog((prev) => ({ ...prev, open: false }))
+	}, [setDeleteDialog])
 	const initialValues = {
 		name: '',
 		percentage: '',
+		isTaxExempted: false,
 	}
 	const validationSchema = yup.object().shape({
 		name: yup.string().typeError('The name is invalid').required('The name is required'),
@@ -41,62 +40,71 @@ const DiscountsPage = () => {
 	const formik = useFormik({
 		initialValues: initialValues,
 		validationSchema: validationSchema,
-		onSubmit(values) {
-			console.log(values)
+		enableReinitialize: true,
+		onSubmit(values, { props, resetForm, setErrors, setSubmitting }) {
+			setDisabled(true)
+			handleCreateDiscount(values, setErrors, resetForm, setDisabled)
 		},
 	})
 	return (
 		<LayoutComponent>
-			<DialogComponent open={openDeleteDiscountDialog} onClose={handleCloseDeleteDiscountDialog} handleDeleteDialog={handleDeleteDialog} title='Are you sure?'>
-				Do you really want to delete? If you proceed this item will not be able to get back this forever.
+			<DialogComponent open={deleteDialog.open} onClose={handleCloseDeleteDialog} deleteId={deleteDialog.id} handleDeleteDialog={handleDeleteDiscount} setDeleteDialog={setDeleteDialog} title='Are you sure?'>
+				This will be permanently removed from our record and you won't get it back. Do you really want to delete?
 			</DialogComponent>
 			<Stack spacing={4} width='100%'>
 				<Grid container>
 					<Grid item xs={12} sm={12} md={12} lg={8} xl={6}>
 						<Paper elevation={0} sx={{ padding: '2rem', borderRadius: '1rem' }}>
 							<Typography variant='h5' marginBottom='1.5rem' color={colors.grey[700]}>
-								Create Discounts
+								Create Discount
 							</Typography>
-							<form onSubmit={formik.handleSubmit}>
-								<Box paddingBottom='1rem'>
-									<InputLabel htmlFor='name' sx={{ marginBottom: '.25rem' }}>
-										Name *
-									</InputLabel>
-									<TextField id='name' variant='outlined' name='name' value={formik.values.name} onChange={formik.handleChange} error={formik.touched.name && Boolean(formik.errors.name)} helperText={formik.touched.name && formik.errors.name} fullWidth />
-								</Box>
-								<Box paddingBottom='1rem'>
-									<InputLabel htmlFor='percentage' sx={{ marginBottom: '.25rem' }}>
-										Percentage *
-									</InputLabel>
-									<TextField
-										id='percentage'
-										variant='outlined'
-										name='percentage'
-										value={formik.values.percentage}
-										onChange={formik.handleChange}
-										error={formik.touched.percentage && Boolean(formik.errors.percentage)}
-										helperText={formik.touched.percentage && formik.errors.percentage}
-										InputProps={{
-											endAdornment: <InputAdornment position='end'>%</InputAdornment>,
-										}}
-										fullWidth
-									/>
-								</Box>
-								<Button
-									variant='contained'
-									size='large'
-									type='submit'
-									disableElevation
-									sx={{
-										minWidth: '150px',
-										minHeight: '50px',
-										borderRadius: '.5rem',
-										color: 'background.default',
-									}}
-								>
-									Save
-								</Button>
-							</form>
+							<Box component='form' noValidate autoComplete='off' onSubmit={formik.handleSubmit}>
+								<Stack spacing={2}>
+									<FormGroup>
+										<InputLabel htmlFor='name' sx={{ marginBottom: '.25rem' }}>
+											Name *
+										</InputLabel>
+										<FormControl required error={formik.touched.name && Boolean(formik.errors.name)} variant='standard' fullWidth>
+											<OutlinedInput value={formik.values.name} onChange={formik.handleChange} id='name' sx={{ borderRadius: '.5rem' }} />
+											<FormHelperText>{formik.touched.name && formik.errors.name}</FormHelperText>
+										</FormControl>
+									</FormGroup>
+									<FormGroup>
+										<InputLabel htmlFor='percentage' sx={{ marginBottom: '.25rem' }}>
+											Percentage *
+										</InputLabel>
+										<FormControl required error={formik.touched.percentage && Boolean(formik.errors.percentage)} variant='standard' fullWidth>
+											<OutlinedInput value={formik.values.percentage} onChange={formik.handleChange} id='percentage' endAdornment={<InputAdornment position='end'>%</InputAdornment>} sx={{ borderRadius: '.5rem' }} />
+											<FormHelperText>{formik.touched.percentage && formik.errors.percentage}</FormHelperText>
+										</FormControl>
+									</FormGroup>
+									<FormGroup>
+										<FormControl required error={true} variant='standard' fullWidth>
+											<FormControlLabel control={<Checkbox checked={formik.values.isTaxExempted} name='isTaxExempted' />} onChange={formik.handleChange} label='Tax Exempted' />
+										</FormControl>
+									</FormGroup>
+									<FormGroup>
+										<Button
+											variant='contained'
+											size='large'
+											type='submit'
+											disableElevation
+											disabled={disabled}
+											sx={{
+												width: {
+													sm: '100%',
+													md: '150px',
+												},
+												minHeight: '50px',
+												borderRadius: '.5rem',
+												color: 'background.default',
+											}}
+										>
+											Create
+										</Button>
+									</FormGroup>
+								</Stack>
+							</Box>
 						</Paper>
 					</Grid>
 				</Grid>
@@ -109,13 +117,17 @@ const DiscountsPage = () => {
 							<Typography variant='body2' marginBottom='1.5rem' color={colors.grey[500]}>
 								List of all discounts than can be used to transact.
 							</Typography>
-							<Grid container spacing={3}>
-								{discounts.map((discount) => (
-									<Grid item xs={12} sm={6} md={4} xl={3} key={discount.id}>
-										<DiscountComponent discount={discount} handleOpenDeleteDiscountDialog={handleOpenDeleteDiscountDialog} />
-									</Grid>
-								))}
-							</Grid>
+							{discounts.length > 0 ? (
+								<Grid container spacing={3}>
+									{discounts.map((discount) => (
+										<Grid item xs={12} sm={6} md={4} xl={3} key={discount.id}>
+											<DiscountComponent discount={discount} handleOpenDeleteDialog={handleOpenDeleteDialog} />
+										</Grid>
+									))}
+								</Grid>
+							) : (
+								<AlertComponent severity='info'>There's no discounts available.</AlertComponent>
+							)}
 						</Paper>
 					</Grid>
 				</Grid>

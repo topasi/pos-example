@@ -2,12 +2,13 @@ import { initializeApp } from 'firebase/app'
 import { getDatabase } from 'firebase/database'
 
 const firebaseConfig = {
-	apiKey: 'AIzaSyD1I9TE0yb5l3a-Lw07eRyKmo9yBGkoUps',
-	authDomain: 'pos-example-2b762.firebaseapp.com',
-	projectId: 'pos-example-2b762',
-	storageBucket: 'pos-example-2b762.appspot.com',
-	messagingSenderId: '647853288796',
-	appId: '1:647853288796:web:21c7defd06d1041c8ca599',
+	apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+	authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+	projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+	storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+	messagingSenderId: process.env.REACT_APP_FIREBASE_MESSEGING_SENDER_ID,
+	appId: process.env.REACT_APP_FIREBASE_APP_ID,
+	databaseURL: process.env.REACT_APP_FIREBASE_DATABSE_URL,
 }
 
 const app = initializeApp(firebaseConfig)

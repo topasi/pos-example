@@ -6,7 +6,7 @@ import { styled, colors, Stack, Grid, Box, InputLabel, Button, Typography, Avata
 import MuiTextField from '@mui/material/TextField'
 
 import { menu, categories } from '../data'
-import { config } from '../config'
+import useSettings from '../hooks/useSettings'
 import ModalComponent from '../components/modal.component'
 
 const TextField = styled(MuiTextField)(({ theme }) => ({
@@ -21,6 +21,7 @@ const TextField = styled(MuiTextField)(({ theme }) => ({
 const sizes = ['small', 'regular', 'upsize']
 
 const MenuCreateComponent = ({ openMenuModal, handleCloseMenuModal }) => {
+	const { settings } = useSettings()
 	const [checked, setChecked] = useState([1])
 	const handleToggle = (value) => () => {
 		const currentIndex = checked.indexOf(value)
@@ -93,7 +94,7 @@ const MenuCreateComponent = ({ openMenuModal, handleCloseMenuModal }) => {
 								helperText={formik.touched.price && formik.errors.price}
 								fullWidth
 								InputProps={{
-									startAdornment: <InputAdornment position='start'>{config.currency}</InputAdornment>,
+									startAdornment: <InputAdornment position='start'>{settings.currency}</InputAdornment>,
 								}}
 							/>
 						</Box>

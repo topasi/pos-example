@@ -3,13 +3,16 @@ import ReactDOM from 'react-dom/client'
 import { createTheme, ThemeProvider } from '@mui/material'
 
 import App from './App'
+import { SettingsProvider } from './contexts/settings.context'
+import { CategoriesProvider } from './contexts/categories.context'
+import { DiscountsProvider } from './contexts/discounts.context'
 
 let theme = createTheme({
 	palette: {
 		primary: {
 			main: '#25ae9c',
-		}
-	}
+		},
+	},
 })
 
 theme = createTheme(theme, {
@@ -29,7 +32,13 @@ const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
 	<React.StrictMode>
 		<ThemeProvider theme={theme}>
-			<App />
+			<SettingsProvider>
+				<CategoriesProvider>
+					<DiscountsProvider>
+						<App />
+					</DiscountsProvider>
+				</CategoriesProvider>
+			</SettingsProvider>
 		</ThemeProvider>
 	</React.StrictMode>
 )

@@ -1,10 +1,10 @@
 import React from 'react'
 import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material'
 
-const DialogComponent = ({ open, onClose, handleDeleteDialog, title, children }) => {
+const DialogComponent = ({ open, onClose, deleteId, handleDeleteDialog, setDeleteDialog, title, children }) => {
 	return (
 		<Dialog
-			open={open}
+			open={open || false}
 			onClose={onClose}
 			aria-labelledby='alert-dialog-title'
 			aria-describedby='alert-dialog-description'
@@ -25,7 +25,7 @@ const DialogComponent = ({ open, onClose, handleDeleteDialog, title, children })
 				<Button onClick={onClose} sx={{ color: 'text.primary' }}>
 					No, Cancel
 				</Button>
-				<Button onClick={handleDeleteDialog} color='error' autoFocus>
+				<Button onClick={() => handleDeleteDialog(deleteId, setDeleteDialog)} color='error' autoFocus>
 					Yes, Proceed
 				</Button>
 			</DialogActions>

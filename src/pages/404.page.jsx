@@ -26,7 +26,7 @@ const NotFoundPage = () => {
 						color: colors.grey[400],
 					}}
 				>
-					Page is not found
+					Page not found
 				</Typography>
 				<Typography
 					variant='h6'

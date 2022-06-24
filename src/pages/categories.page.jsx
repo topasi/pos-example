@@ -1,35 +1,33 @@
 import React, { useCallback, useState } from 'react'
 import * as yup from 'yup'
 import { useFormik } from 'formik'
-import { styled, colors, Stack, Grid, Box, Paper, InputLabel, Button, Typography } from '@mui/material'
-import MuiTextField from '@mui/material/TextField'
+import { colors, Stack, Grid, Box, Paper, InputLabel, Button, Typography, FormGroup, FormControl, FormHelperText, OutlinedInput } from '@mui/material'
 
-import { categories } from '../data'
 import LayoutComponent from '../components/layout.component'
 import CategoryComponent from '../components/category.component'
 import DialogComponent from '../components/dialog.component'
-
-const TextField = styled(MuiTextField)(({ theme }) => ({
-	'& .MuiOutlinedInput-root': {
-		borderRadius: '.5rem',
-	},
-	'& .MuiFormHelperText-root': {
-		marginLeft: 0,
-	},
-}))
+import AlertComponent from '../components/alert.component'
+import useCategories from '../hooks/useCategories'
 
 const CategoriesPage = () => {
-	const [openDeleteCategoryDialog, setOpenDeleteCategoryDialog] = useState(false)
-	const handleDeleteDialog = useCallback(() => {
-		setOpenDeleteCategoryDialog(false)
-		alert()
-	}, [])
-	const handleOpenDeleteCategoryDialog = useCallback(() => {
-		setOpenDeleteCategoryDialog(true)
-	}, [setOpenDeleteCategoryDialog])
-	const handleCloseDeleteCategoryDialog = useCallback(() => {
-		setOpenDeleteCategoryDialog(false)
-	}, [setOpenDeleteCategoryDialog])
+	const { categories, handleCreateCategory, handleDeleteCategory } = useCategories()
+	const [disabled, setDisabled] = useState(false)
+	const [deleteDialog, setDeleteDialog] = useState({
+		open: false,
+		id: '',
+	})
+	const handleOpenDeleteDialog = useCallback(
+		(id) => {
+			setDeleteDialog({
+				open: true,
+				id,
+			})
+		},
+		[setDeleteDialog]
+	)
+	const handleCloseDeleteDialog = useCallback(() => {
+		setDeleteDialog((prev) => ({ ...prev, open: false }))
+	}, [setDeleteDialog])
 	const initialValues = {
 		name: '',
 	}
@@ -39,14 +37,16 @@ const CategoriesPage = () => {
 	const formik = useFormik({
 		initialValues: initialValues,
 		validationSchema: validationSchema,
-		onSubmit(values) {
-			console.log(values)
+		enableReinitialize: true,
+		onSubmit(values, { props, resetForm, setErrors, setSubmitting }) {
+			setDisabled(true)
+			handleCreateCategory(values, setErrors, resetForm, setDisabled)
 		},
 	})
 	return (
 		<LayoutComponent>
-			<DialogComponent open={openDeleteCategoryDialog} onClose={handleCloseDeleteCategoryDialog} handleDeleteDialog={handleDeleteDialog} title='Are you sure?'>
-				Do you really want to delete? If you proceed this item will not be able to get back this forever.
+			<DialogComponent open={deleteDialog.open} onClose={handleCloseDeleteDialog} deleteId={deleteDialog.id} handleDeleteDialog={handleDeleteCategory} setDeleteDialog={setDeleteDialog} title='Are you sure?'>
+				This will be permanently removed from our record and you won't get it back. Do you really want to delete?
 			</DialogComponent>
 			<Stack spacing={4} width='100%'>
 				<Grid container>
@@ -55,28 +55,39 @@ const CategoriesPage = () => {
 							<Typography variant='h5' marginBottom='1.5rem' color={colors.grey[700]}>
 								Create Category
 							</Typography>
-							<form onSubmit={formik.handleSubmit}>
-								<Box paddingBottom='1rem'>
-									<InputLabel htmlFor='name' sx={{ marginBottom: '.25rem' }}>
-										Name *
-									</InputLabel>
-									<TextField id='name' variant='outlined' name='name' value={formik.values.name} onChange={formik.handleChange} error={formik.touched.name && Boolean(formik.errors.name)} helperText={formik.touched.name && formik.errors.name} fullWidth />
-								</Box>
-								<Button
-									variant='contained'
-									size='large'
-									type='submit'
-									disableElevation
-									sx={{
-										minWidth: '150px',
-										minHeight: '50px',
-										borderRadius: '.5rem',
-										color: 'background.default',
-									}}
-								>
-									Save
-								</Button>
-							</form>
+							<Box component='form' noValidate autoComplete='off' onSubmit={formik.handleSubmit}>
+								<Stack spacing={2}>
+									<FormGroup>
+										<InputLabel htmlFor='name' sx={{ marginBottom: '.25rem' }}>
+											Name *
+										</InputLabel>
+										<FormControl required error={formik.touched.name && Boolean(formik.errors.name)} variant='standard' fullWidth>
+											<OutlinedInput value={formik.values.name} onChange={formik.handleChange} id='name' sx={{ borderRadius: '.5rem' }} />
+											<FormHelperText>{formik.touched.name && formik.errors.name}</FormHelperText>
+										</FormControl>
+									</FormGroup>
+									<FormGroup>
+										<Button
+											variant='contained'
+											size='large'
+											type='submit'
+											disableElevation
+											disabled={disabled}
+											sx={{
+												width: {
+													sm: '100%',
+													md: '150px',
+												},
+												minHeight: '50px',
+												borderRadius: '.5rem',
+												color: 'background.default',
+											}}
+										>
+											Create
+										</Button>
+									</FormGroup>
+								</Stack>
+							</Box>
 						</Paper>
 					</Grid>
 				</Grid>
@@ -89,13 +100,17 @@ const CategoriesPage = () => {
 							<Typography variant='body2' marginBottom='1.5rem' color={colors.grey[400]}>
 								Lis of all categories that can be used to categorized a menu
 							</Typography>
-							<Grid container spacing={3}>
-								{categories.map((category) => (
-									<Grid item xs={12} sm={6} md={4} xl={3} key={category.id}>
-										<CategoryComponent name={category.name} handleOpenDeleteCategoryDialog={handleOpenDeleteCategoryDialog} />
-									</Grid>
-								))}
-							</Grid>
+							{categories.length > 0 ? (
+								<Grid container spacing={3}>
+									{categories.map((category) => (
+										<Grid item xs={12} sm={6} md={4} xl={3} key={category.id}>
+											<CategoryComponent category={category} handleOpenDeleteDialog={handleOpenDeleteDialog} />
+										</Grid>
+									))}
+								</Grid>
+							) : (
+								<AlertComponent severity='info'>There's no categories available.</AlertComponent>
+							)}
 						</Paper>
 					</Grid>
 				</Grid>

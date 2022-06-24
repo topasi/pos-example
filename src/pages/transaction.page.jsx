@@ -4,7 +4,7 @@ import { styled, Grid, Paper, Box, Tabs } from '@mui/material'
 import MuiTab from '@mui/material/Tab'
 
 import { categories, menu, discounts } from '../data'
-import { config } from '../config'
+import useSettings from '../hooks/useSettings'
 import useLocalStorage from '../hooks/useLocalStorage'
 import LayoutComponent from '../components/layout.component'
 import MenuItemComponent from '../components/menu-item.component'
@@ -38,6 +38,7 @@ const a11yProps = (index) => {
 }
 
 const TransactionPage = () => {
+	const { settings } = useSettings()
 	const [tabValue, setTabValue] = useState(0)
 	const [openMenuOption, setOpenMenuOption] = useState(false)
 	const [openOutofStock, setOpenOutofStock] = useState(false)
@@ -50,11 +51,11 @@ const TransactionPage = () => {
 		discounts: [],
 		count: 0,
 		subtotal: 0,
-		vat: config.vat,
+		vat: settings.vat,
 		vatPrice: 0,
 		discountPercent: 0,
 		discountPrice: 0,
-		serviceCharge: config.serviceCharge,
+		serviceCharge: settings.serviceCharge,
 		total: 0,
 	})
 	const handleTabChange = (_, newValue) => {

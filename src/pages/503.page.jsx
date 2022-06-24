@@ -3,7 +3,7 @@ import { colors, Stack, Typography } from '@mui/material'
 
 import LayoutComponent from '../components/layout.component'
 
-const DashboardPage = () => {
+const ServiceUnavailablePage = () => {
 	return (
 		<LayoutComponent>
 			<Stack spacung={0} alignItems='center' justifyContent='center' width='100%'>
@@ -53,4 +53,4 @@ const DashboardPage = () => {
 	)
 }
 
-export default DashboardPage
+export default ServiceUnavailablePage

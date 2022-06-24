@@ -2,7 +2,7 @@ import React from 'react'
 import { colors, Card, CardContent, Typography, IconButton } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 
-const CategoryComponent = ({ name, handleOpenDeleteCategoryDialog }) => {
+const CategoryComponent = ({ category, handleOpenDeleteDialog }) => {
 	return (
 		<Card
 			sx={{
@@ -28,7 +28,7 @@ const CategoryComponent = ({ name, handleOpenDeleteCategoryDialog }) => {
 				<IconButton
 					aria-label='delete'
 					size='small'
-					onClick={handleOpenDeleteCategoryDialog}
+					onClick={() => handleOpenDeleteDialog(category.id)}
 					sx={{
 						position: 'absolute',
 						right: 0,
@@ -39,7 +39,7 @@ const CategoryComponent = ({ name, handleOpenDeleteCategoryDialog }) => {
 					<CloseIcon fontSize='inherit' />
 				</IconButton>
 				<Typography variant='h5' color='background.default' textAlign='center'>
-					{name}
+					{category.name}
 				</Typography>
 			</CardContent>
 		</Card>
