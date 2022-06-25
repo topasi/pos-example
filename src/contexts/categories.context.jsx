@@ -16,7 +16,7 @@ export const CategoriesProvider = ({ children }) => {
 		severity: 'info',
 		message: '',
 	})
-	const [categories, setCategories] = useState({})
+	const [categories, setCategories] = useState([])
 	const [keyword, setKeyword] = useState('')
 	const handleError = (e) => {
 		console.log(e)

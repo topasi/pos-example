@@ -10,6 +10,7 @@ import { router } from '../router'
 import brandFullWhite from '../assets/brand-full-white.png'
 import useCategories from '../hooks/useCategories'
 import useDiscounts from '../hooks/useDiscounts'
+import useMenu from '../hooks/useMenu'
 
 const IconButton = styled(Button)(({ selected, theme }) => ({
 	minWidth: 0,
@@ -106,6 +107,8 @@ const NavbarComponent = ({ drawerWidth, openDrawer, handleClickDrawer }) => {
 	const [openSearchIconButton, setOpenSearchIconButton] = useState(false)
 	const { handleSearchCategory } = useCategories()
 	const { handleSearchDiscount } = useDiscounts()
+	const { handleSearchMenu } = useMenu()
+	const allowedSearch = [router.categories.path, router.menu.path, router.discounts.path, router.transaction.path, router.orders.path]
 	const handleOpenSearchBox = () => {
 		setOpenSearchBox((prev) => !prev)
 		setOpenSearchIconButton((prev) => !prev)
@@ -116,6 +119,9 @@ const NavbarComponent = ({ drawerWidth, openDrawer, handleClickDrawer }) => {
 		}
 		if (router.discounts.path === location.pathname) {
 			handleSearchDiscount(keyword)
+		}
+		if (router.menu.path === location.pathname) {
+			handleSearchMenu(keyword)
 		}
 	}
 	return (
@@ -151,7 +157,7 @@ const NavbarComponent = ({ drawerWidth, openDrawer, handleClickDrawer }) => {
 							<IconButton disableRipple selected={openDrawer} onClick={handleClickDrawer}>
 								<MenuIcon />
 							</IconButton>
-							{[router.dashboard.path, router.settings.path].indexOf(location.pathname) === -1 && (
+							{allowedSearch.indexOf(location.pathname) > -1 && (
 								<SearchBox open={openSearchBox}>
 									<SearchField
 										label=''
@@ -197,7 +203,7 @@ const NavbarComponent = ({ drawerWidth, openDrawer, handleClickDrawer }) => {
 					</Grid>
 					<Grid item order={{ xs: 3 }}>
 						<Stack spacing={2} direction='row' alignItems='center'>
-							{[router.dashboard.path, router.settings.path].indexOf(location.pathname) === -1 && (
+							{allowedSearch.indexOf(location.pathname) > -1 && (
 								<IconButton
 									disableRipple
 									selected={openSearchIconButton}

@@ -6,6 +6,7 @@ import App from './App'
 import { SettingsProvider } from './contexts/settings.context'
 import { CategoriesProvider } from './contexts/categories.context'
 import { DiscountsProvider } from './contexts/discounts.context'
+import { MenuProvider } from './contexts/menu.context'
 
 let theme = createTheme({
 	palette: {
@@ -35,7 +36,9 @@ root.render(
 			<SettingsProvider>
 				<CategoriesProvider>
 					<DiscountsProvider>
-						<App />
+						<MenuProvider>
+							<App />
+						</MenuProvider>
 					</DiscountsProvider>
 				</CategoriesProvider>
 			</SettingsProvider>

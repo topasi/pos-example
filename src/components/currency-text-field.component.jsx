@@ -1,28 +1,8 @@
-import React, { forwardRef, useEffect, useState } from 'react'
-import NumberFormat from 'react-number-format'
+import React, { useEffect, useState } from 'react'
 import { TextField } from '@mui/material'
 
 import useSettings from '../hooks/useSettings'
-
-const NumberFormatCustom = forwardRef(function NumberFormatCustom(props, ref) {
-	const { currency, onChange, ...other } = props
-	return (
-		<NumberFormat
-			{...other}
-			getInputRef={ref}
-			onValueChange={(values) => {
-				onChange({
-					target: {
-						name: props.name,
-						value: values.value,
-					},
-				})
-			}}
-			thousandSeparator
-			prefix={currency}
-		/>
-	)
-})
+import NumberFormatComponent from './number-format.component'
 
 const CurrencyTextFieldComponent = ({ selected, cart, handleInputChange, ...others }) => {
 	const [value, setValue] = useState('')
@@ -50,7 +30,7 @@ const CurrencyTextFieldComponent = ({ selected, cart, handleInputChange, ...othe
 				inputProps: {
 					currency: settings.currency,
 				},
-				inputComponent: NumberFormatCustom,
+				inputComponent: NumberFormatComponent,
 			}}
 			{...others}
 		/>

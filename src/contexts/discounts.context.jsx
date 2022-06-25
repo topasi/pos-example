@@ -16,7 +16,7 @@ export const DiscountsProvider = ({ children }) => {
 		severity: 'info',
 		message: '',
 	})
-	const [discounts, setDiscounts] = useState({})
+	const [discounts, setDiscounts] = useState([])
 	const [keyword, setKeyword] = useState('')
 	const handleError = (e) => {
 		console.log(e)

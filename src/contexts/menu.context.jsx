@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react'
+import { lowerCase } from 'lodash'
 import { ref, set, get, update, remove, query, orderByChild } from 'firebase/database'
 import moment from 'moment'
 import { v4 as uuidv4 } from 'uuid'
@@ -15,7 +16,8 @@ export const MenuProvider = ({ children }) => {
 		severity: 'info',
 		message: '',
 	})
-	const [menu, setMenu] = useState({})
+	const [menu, setMenu] = useState([])
+	const [keyword, setKeyword] = useState('')
 	const handleSnackbar = () => {
 		setSnackbar((prev) => ({ ...prev, open: false }))
 	}
@@ -27,13 +29,14 @@ export const MenuProvider = ({ children }) => {
 			message: 'Oops! something went wrong',
 		})
 	}
-	const handleCreateMenu = (values, resetForm, setDisabled) => {
+	const handleCreateMenu = (values, resetForm, setDisabled, handleCloseMenuModal) => {
 		values.id = uuidv4()
 		values.createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
 		values.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
 		set(ref(db, `${router.menu.path}/${values.id}`), values)
 			.then(() => {
 				setDisabled(false)
+				handleCloseMenuModal()
 				setSnackbar({
 					open: true,
 					severity: 'success',
@@ -43,18 +46,20 @@ export const MenuProvider = ({ children }) => {
 			})
 			.catch(handleError)
 	}
-	const handleUpdateMenu = (values, setDisabled) => {
-		get(ref(db, `${router.menu.path}/${values.id}`))
+	const handleUpdateMenu = (id, values, resetForm, setDisabled, handleCloseMenuModal) => {
+		get(ref(db, `${router.menu.path}/${id}`))
 			.then((snapshot) => {
 				if (snapshot.exists()) {
-					update(ref(db, `${router.menu.path}/${values.id}`), values)
+					update(ref(db, `${router.menu.path}/${id}`), values)
 						.then(() => {
 							setDisabled(false)
+							handleCloseMenuModal()
 							setSnackbar({
 								open: true,
 								severity: 'success',
 								message: 'Successfully deleted a menu',
 							})
+							resetForm()
 						})
 						.catch(handleError)
 				} else {
@@ -62,7 +67,7 @@ export const MenuProvider = ({ children }) => {
 					setSnackbar({
 						open: true,
 						severity: 'error',
-						message: "menu doesn't exists",
+						message: "Menu doesn't exists",
 					})
 				}
 			})
@@ -93,21 +98,37 @@ export const MenuProvider = ({ children }) => {
 			})
 			.catch(handleError)
 	}
+	const handleSearchMenu = (keyword) => {
+		setKeyword(lowerCase(keyword))
+	}
 	useEffect(() => {
 		get(query(ref(db, router.menu.path), orderByChild('updatedAt')))
 			.then((snapshot) => {
 				const data = []
 				if (snapshot.exists()) {
-					snapshot.forEach((snap) => {
-						data.push(snap.val())
-					})
+					if (keyword) {
+						snapshot.forEach((snap) => {
+							const value = snap.val()
+							Object.keys(value).forEach((field) => {
+								const isAlreadyInData = data.find((item) => item.id === value.id)
+								const isMatchKeyword = lowerCase(value[field]).match(keyword)
+								if (!isAlreadyInData && isMatchKeyword) {
+									data.push(value)
+								}
+							})
+						})
+					} else {
+						snapshot.forEach((snap) => {
+							data.push(snap.val())
+						})
+					}
 				}
 				setMenu(data)
 			})
 			.catch(handleError)
-	}, [menu])
+	}, [menu, keyword])
 	return (
-		<MenuContext.Provider value={{ menu, handleCreateMenu, handleUpdateMenu, handleDeleteMenu }}>
+		<MenuContext.Provider value={{ menu, handleCreateMenu, handleUpdateMenu, handleDeleteMenu, handleSearchMenu }}>
 			<SnackbarComponent open={snackbar.open} onClose={handleSnackbar} severity={snackbar.severity}>
 				{snackbar.message}
 			</SnackbarComponent>

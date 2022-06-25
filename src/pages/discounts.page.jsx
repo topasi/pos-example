@@ -79,7 +79,7 @@ const DiscountsPage = () => {
 										</FormControl>
 									</FormGroup>
 									<FormGroup>
-										<FormControl required error={true} variant='standard' fullWidth>
+										<FormControl required variant='standard' fullWidth>
 											<FormControlLabel control={<Checkbox checked={formik.values.isTaxExempted} name='isTaxExempted' />} onChange={formik.handleChange} label='Tax Exempted' />
 										</FormControl>
 									</FormGroup>

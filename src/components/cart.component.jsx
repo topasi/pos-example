@@ -137,7 +137,7 @@ const CartComponent = ({ cart, handleCartUpdate, handleDeleteItemFromCart }) => 
 					<Divider />
 					<List>
 						<ListItem onClick={handleOrderExpand} sx={{ cursor: 'pointer' }}>
-							<ListItemText primary='Order' />
+							<ListItemText primary='Orders' />
 							{openOrder ? <ExpandLessIcon /> : <ExpandMoreIcon />}
 						</ListItem>
 						<Collapse in={openOrder} timeout='auto' unmountOnExit>
@@ -158,7 +158,7 @@ const CartComponent = ({ cart, handleCartUpdate, handleDeleteItemFromCart }) => 
 									))
 								) : (
 									<ListItem>
-										<AlertComponent severity='info'>0 menu orders</AlertComponent>
+										<AlertComponent severity='info'>Empty Cart</AlertComponent>
 									</ListItem>
 								)}
 							</List>
