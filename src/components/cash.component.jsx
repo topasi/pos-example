@@ -18,16 +18,16 @@ const CashComponent = ({ cart, total, handleCashPayment }) => {
 	}
 	const handleInputChange = useCallback(
 		(value) => {
-			if (value !== '') {
-				setSelected(data.map(() => false))
-				handleCashPayment(total, value)
-			}
+			setSelected(data.map(() => false))
+			handleCashPayment(total, value)
 		},
 		[setSelected, total, handleCashPayment]
 	)
 	useEffect(() => {
 		if (selected.indexOf(true) > -1) {
 			handleCashPayment(total, data[selected.indexOf(true)])
+		} else {
+			handleCashPayment(total)
 		}
 	}, [selected, total, handleCashPayment])
 	useEffect(() => {
@@ -72,6 +72,6 @@ const CashComponent = ({ cart, total, handleCashPayment }) => {
 	)
 }
 
-const data = ['1000', '1500', '2000', '2500', '3000', '3500']
+const data = ['1000', '1500', '2000', '2500', '3000', '3500', '4000', '4500', '5000']
 
 export default CashComponent

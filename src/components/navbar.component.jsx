@@ -123,6 +123,10 @@ const NavbarComponent = ({ drawerWidth, openDrawer, handleClickDrawer }) => {
 		if (router.menu.path === location.pathname) {
 			handleSearchMenu(keyword)
 		}
+		if (router.transaction.path === location.pathname) {
+			handleSearchDiscount(keyword)
+			handleSearchMenu(keyword)
+		}
 	}
 	return (
 		<AppBar position='fixed' open={openDrawer} width={drawerWidth} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>

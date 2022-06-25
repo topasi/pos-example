@@ -39,12 +39,32 @@ const MenuItemComponent = ({ item, selected, handleMenuClick }) => {
 							borderRadius: '50%',
 						}}
 					>
-						<CheckCircle
-							sx={{
-								fontSize: '40px',
-								color: 'primary.main',
-							}}
-						/>
+						{selected.qty > 1 ? (
+							<Box
+								sx={{
+									position: 'relative',
+									top: '3px',
+									left: '3px',
+									width: '34px',
+									height: '34px',
+									backgroundColor: 'primary.main',
+									borderRadius: '50%',
+									fontSize: '20px',
+									lineHeight: '34px',
+									textAlign: 'center',
+									color: 'background.default',
+								}}
+							>
+								{selected.qty}
+							</Box>
+						) : (
+							<CheckCircle
+								sx={{
+									fontSize: '40px',
+									color: 'primary.main',
+								}}
+							/>
+						)}
 					</Box>
 				</Box>
 			)}
@@ -56,7 +76,7 @@ const MenuItemComponent = ({ item, selected, handleMenuClick }) => {
 					</Typography>
 					<Box display='flex' alignItems='flex-end' flexDirection='column'>
 						<CurrencyTypographyComponent variant='h6' value={item.price} />
-						{item.sizes.length > 1 || item.sideDishes.length > 0 ? (
+						{item?.sizes?.length > 1 || item?.sideDishes?.length > 0 ? (
 							<MoreIcon sx={{ color: colors.grey[300] }} />
 						) : (
 							<Typography variant='body2' color={colors.grey[500]} fontSize='12px'>

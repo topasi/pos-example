@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react'
+import { truncate } from 'lodash'
 import { SwipeableList, SwipeableListItem, SwipeAction, TrailingActions } from 'react-swipeable-list'
 import 'react-swipeable-list/dist/styles.css'
 import { colors, Paper, Box, List, ListItem, ListItemText, Typography, Stack, Divider, Badge, Collapse, Button } from '@mui/material'
@@ -7,13 +8,15 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 
+import useOrders from '../hooks/useOrders'
 import QtyComponent from './qty.component'
 import CurrencyTypographyComponent from './currency-typography.component'
 import CashComponent from './cash.component'
 import AlertComponent from './alert.component'
-import SnackbarComponent from './snackbar.component'
 
-const CartComponent = ({ cart, handleCartUpdate, handleDeleteItemFromCart }) => {
+const CartComponent = ({ cart, setSnackbar, handleCartUpdate, handleDeleteItemFromCart, handleResetCart }) => {
+	const { handleCreateOrder } = useOrders()
+	const [disabled, setDisabled] = useState(false)
 	const [openOrder, setOpenOrder] = useState(true)
 	const [openCash, setOpenCash] = useState(true)
 	const [cartItems, setCartItems] = useState([])
@@ -24,7 +27,7 @@ const CartComponent = ({ cart, handleCartUpdate, handleDeleteItemFromCart }) => 
 	const [discountPrice, setDiscountPrice] = useState(0)
 	const [total, setTotal] = useState(0)
 	const [change, setChange] = useState(0)
-	const [openErrorPayment, setOpenErrorPayment] = useState(false)
+	const [payment, setPayment] = useState(0)
 	const elQty = useRef([])
 	const handleOrderExpand = () => {
 		setOpenOrder(!openOrder)
@@ -40,7 +43,7 @@ const CartComponent = ({ cart, handleCartUpdate, handleDeleteItemFromCart }) => 
 	}, [])
 	const handleIncreaseQtyChange = useCallback(
 		(item, index) => {
-			const value = parseInt(elQty.current[index].innerHTML, 10)
+			const value = parseInt(elQty.current[index].innerHTML)
 			const qty = Math.min(value + 1, item.stocks)
 			elQty.current[index].innerHTML = qty
 			item.qty = qty
@@ -50,7 +53,7 @@ const CartComponent = ({ cart, handleCartUpdate, handleDeleteItemFromCart }) => 
 	)
 	const handleReduceQtyChange = useCallback(
 		(item, index) => {
-			const value = parseInt(elQty.current[index].innerHTML, 10)
+			const value = parseInt(elQty.current[index].innerHTML)
 			const qty = Math.max(value - 1, 1)
 			elQty.current[index].innerHTML = qty
 			item.qty = qty
@@ -60,19 +63,33 @@ const CartComponent = ({ cart, handleCartUpdate, handleDeleteItemFromCart }) => 
 	)
 	const handleCashPayment = useCallback(
 		(total, cash) => {
-			setChange(cash - total)
+			if (cash) {
+				setPayment(cash)
+				setChange(cash - total)
+			} else {
+				setPayment(0)
+				setChange(0)
+			}
 		},
 		[setChange]
 	)
 	const handlePaymentClick = () => {
-		if (change > 0) {
-			console.log(cart)
+		if (cart.items.length === 0) {
+			setSnackbar({
+				open: true,
+				severity: 'warning',
+				message: 'Cart is empty',
+			})
+		} else if (change < 0 || payment <= 0) {
+			setSnackbar({
+				open: true,
+				severity: 'error',
+				message: 'Invalid Amount',
+			})
 		} else {
-			setOpenErrorPayment(true)
+			console.log(change)
+			handleCreateOrder(cart, setDisabled, setCartItems, setCartCount, setCartSubTotal, setvatPrice, setDiscountPercent, setTotal, setChange, setPayment, handleResetCart)
 		}
-	}
-	const handleErrorPaymentClose = () => {
-		setOpenErrorPayment(false)
 	}
 	useEffect(() => {
 		setCartItems(cart.items)
@@ -108,17 +125,30 @@ const CartComponent = ({ cart, handleCartUpdate, handleDeleteItemFromCart }) => 
 	)
 	return (
 		<Paper elevation={0} sx={{ height: '100%', borderRadius: '1rem' }}>
-			<SnackbarComponent open={openErrorPayment} onClose={handleErrorPaymentClose} severity='error'>
-				Invalid amount
-			</SnackbarComponent>
 			<Stack spacing={3} direction='column' height='100%'>
 				<Box flexGrow={1}>
-					<List sx={{ padding: '1rem 0' }}>
+					<List sx={{ padding: '.3rem 0' }}>
 						<ListItem>
-							<Stack spacing={0} direction='row' sx={{ width: '100%' }}>
-								<Typography variant='h6' sx={{ flexGrow: 1 }}>
-									Cart
-								</Typography>
+							<Stack spacing={0} direction='row' alignItems='center' width='100%'>
+								<Box flexGrow={1}>
+									<Typography
+										variant='h6'
+										sx={{
+											position: 'relative',
+											top: '5px',
+										}}
+									>
+										Cart
+									</Typography>
+									<Typography
+										variant='caption'
+										sx={{
+											color: colors.grey[500],
+										}}
+									>
+										Swipe to left to delete an order
+									</Typography>
+								</Box>
 								<Badge
 									badgeContent={cartCount}
 									color='primary'
@@ -137,7 +167,15 @@ const CartComponent = ({ cart, handleCartUpdate, handleDeleteItemFromCart }) => 
 					<Divider />
 					<List>
 						<ListItem onClick={handleOrderExpand} sx={{ cursor: 'pointer' }}>
-							<ListItemText primary='Orders' />
+							<ListItemText
+								primary='ORDERS'
+								sx={{
+									'& .MuiListItemText-primary': {
+										fontSize: '.875rem',
+										fontWeight: '700',
+									},
+								}}
+							/>
 							{openOrder ? <ExpandLessIcon /> : <ExpandMoreIcon />}
 						</ListItem>
 						<Collapse in={openOrder} timeout='auto' unmountOnExit>
@@ -148,7 +186,7 @@ const CartComponent = ({ cart, handleCartUpdate, handleDeleteItemFromCart }) => 
 											<SwipeableList>
 												<SwipeableListItem trailingActions={trailingActions(cart, item)}>
 													<Stack spacing={2} direction='row' sx={{ width: '100%' }}>
-														<ListItemText primary={item.name} secondary={item.categories} sx={{ margin: 0 }} />
+														<ListItemText primary={truncate(item.name, 30)} secondary={truncate(item.categories, 100)} sx={{ margin: 0 }} />
 														<QtyComponent item={item} index={key} handleElQty={handleElQty} handleIncreaseQtyChange={handleIncreaseQtyChange} handleReduceQtyChange={handleReduceQtyChange} />
 														<CurrencyTypographyComponent value={item.price * item.qty} sx={{ width: '65px', textAlign: 'right' }} />
 													</Stack>
@@ -217,7 +255,15 @@ const CartComponent = ({ cart, handleCartUpdate, handleDeleteItemFromCart }) => 
 				<Box sx={{ paddingBottom: '1rem' }}>
 					<List disablePadding>
 						<ListItem onClick={handleCashExpand} sx={{ cursor: 'pointer' }}>
-							<ListItemText primary='Payment' />
+							<ListItemText
+								primary='PAYMENT'
+								sx={{
+									'& .MuiListItemText-primary': {
+										fontSize: '.875rem',
+										fontWeight: '700',
+									},
+								}}
+							/>
 							{openOrder ? <ExpandLessIcon /> : <ExpandMoreIcon />}
 						</ListItem>
 						<Collapse in={openCash} timeout='auto' unmountOnExit>
@@ -244,6 +290,7 @@ const CartComponent = ({ cart, handleCartUpdate, handleDeleteItemFromCart }) => 
 										variant='outlined'
 										size='large'
 										fullWidth
+										disableElevation
 										sx={{
 											minHeight: '50px',
 											borderRadius: '.35rem',
@@ -255,6 +302,8 @@ const CartComponent = ({ cart, handleCartUpdate, handleDeleteItemFromCart }) => 
 										variant='contained'
 										size='large'
 										fullWidth
+										disableElevation
+										disabled={disabled}
 										onClick={handlePaymentClick}
 										sx={{
 											minHeight: '50px',

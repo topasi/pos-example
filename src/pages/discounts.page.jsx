@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import * as yup from 'yup'
 import { useFormik } from 'formik'
 import { colors, Stack, Grid, Box, Paper, InputLabel, Button, Typography, InputAdornment, FormGroup, FormControl, FormControlLabel, FormHelperText, Checkbox, OutlinedInput } from '@mui/material'
@@ -28,11 +28,14 @@ const DiscountsPage = () => {
 	const handleCloseDeleteDialog = useCallback(() => {
 		setDeleteDialog((prev) => ({ ...prev, open: false }))
 	}, [setDeleteDialog])
-	const initialValues = {
-		name: '',
-		percentage: '',
-		isTaxExempted: false,
-	}
+	const initialValues = useMemo(
+		() => ({
+			name: '',
+			percentage: '',
+			isTaxExempted: false,
+		}),
+		[]
+	)
 	const validationSchema = yup.object().shape({
 		name: yup.string().typeError('The name is invalid').required('The name is required'),
 		percentage: yup.number().typeError('The percentage is invalid').required('The percentage is required'),

@@ -1,10 +1,11 @@
-import React, { useState, useCallback } from 'react'
-import { truncate } from 'lodash'
+import React, { useState, useCallback, useMemo } from 'react'
 import { styled, Grid, Paper, Box, Tabs } from '@mui/material'
 import MuiTab from '@mui/material/Tab'
 
-import { categories, menu, discounts } from '../data'
 import useSettings from '../hooks/useSettings'
+import useCategories from '../hooks/useCategories'
+import useMenu from '../hooks/useMenu'
+import useDiscounts from '../hooks/useDiscounts'
 import useLocalStorage from '../hooks/useLocalStorage'
 import LayoutComponent from '../components/layout.component'
 import MenuItemComponent from '../components/menu-item.component'
@@ -39,46 +40,63 @@ const a11yProps = (index) => {
 
 const TransactionPage = () => {
 	const { settings } = useSettings()
+	const { categories } = useCategories()
+	const { discounts } = useDiscounts()
+	const { menu } = useMenu()
 	const [tabValue, setTabValue] = useState(0)
-	const [openMenuOption, setOpenMenuOption] = useState(false)
-	const [openOutofStock, setOpenOutofStock] = useState(false)
-	const [openAddDiscounts, setOpenAddDiscounts] = useState(false)
-	const [openAddToCart, setOpenAddToCart] = useState(false)
-	const [openDeleteItemFromcart, setOpenDeleteFromCart] = useState(false)
-	const [menuOption, setMenuOption] = useState({})
-	const [cart, setCart] = useLocalStorage('cart', {
-		items: [],
-		discounts: [],
-		count: 0,
-		subtotal: 0,
-		vat: settings.vat,
-		vatPrice: 0,
-		discountPercent: 0,
-		discountPrice: 0,
-		serviceCharge: settings.serviceCharge,
-		total: 0,
+	const [snackbar, setSnackbar] = useState({
+		open: false,
+		severity: 'info',
+		message: '',
 	})
+	const [openMenuOption, setOpenMenuOption] = useState(false)
+	const [menuOption, setMenuOption] = useState({})
+	const initialValues = useMemo(
+		() => ({
+			items: [],
+			discounts: [],
+			count: 0,
+			subtotal: 0,
+			vat: 0,
+			vatPrice: 0,
+			discountPercent: 0,
+			discountPrice: 0,
+			serviceCharge: 0,
+			total: 0,
+		}),
+		[]
+	)
+	const [cart, setCart] = useLocalStorage('cart', initialValues)
 	const handleTabChange = (_, newValue) => {
 		setTabValue(newValue)
+	}
+	const handleSnackbar = () => {
+		setSnackbar((prev) => ({ ...prev, open: false }))
 	}
 	const handleAddToCart = useCallback(
 		(cart) => {
 			setCart(cart)
-			setOpenAddToCart(true)
 			setOpenMenuOption(false)
 		},
 		[setCart]
 	)
 	const handleCartUpdate = useCallback(
 		(item, sizeIndex = -1, checkedMenuOption = []) => {
+			const vat = parseInt(settings.vat)
+			const vatDivisor = (100 + vat) / 100
+			const serviceCharge = parseFloat(settings.serviceCharge)
 			if (cart.items.find((cartItem) => cartItem.id === item.id)) {
 				const cartItems = cart.items.map((cartItem) => {
 					const isMatched = cartItem.id === item.id || checkedMenuOption.indexOf(cartItem.id) > -1
-					const isAvailable = cartItem.qty < cartItem.stocks
-					const isOutOfStock = cartItem.qty === cartItem.stocks
+					const isAvailable = cartItem.qty < parseInt(cartItem.stocks)
+					const isOutOfStock = cartItem.qty === parseInt(cartItem.stocks)
 					const isSizeChange = sizeIndex > -1 && cartItem.size !== item.sizes[sizeIndex]
 					if (isMatched && isOutOfStock) {
-						setOpenOutofStock(true)
+						setSnackbar({
+							open: true,
+							severity: 'warning',
+							message: 'Menu is out of stock',
+						})
 					}
 					if (isMatched && isSizeChange) {
 						cartItem.size = item.sizes[sizeIndex]
@@ -89,21 +107,22 @@ const TransactionPage = () => {
 					return cartItem
 				})
 				const cartCount = cartItems.reduce((accumulator, cartItem) => accumulator + cartItem.qty, 0)
-				const cartSubtotal = cartItems.reduce((accumulator, cartItem) => accumulator + cartItem.price * cartItem.qty, 0)
+				const cartSubtotal = cartItems.reduce((accumulator, cartItem) => accumulator + parseFloat(cartItem.price) * cartItem.qty, 0)
 				const cartDiscounts = cart.discounts
-				const vat = (100 + cart.vat) / 100
-				const cartVatPrice = cartDiscounts.find((cartDiscount) => cartDiscount.isTaxExempted === true) ? cartSubtotal / vat - cartSubtotal : cartSubtotal - cartSubtotal / vat
-				const cartDiscountPercent = cartDiscounts.reduce((accumulator, cartDiscount) => accumulator + cartDiscount.percentage, 0)
-				const cartDiscountPrice = (cartSubtotal / vat) * (cartDiscountPercent / 100) * -1
-				const cartTotal = cartSubtotal + (cartVatPrice + cartDiscountPrice + cart.serviceCharge)
+				const cartVatPrice = cartDiscounts.find((cartDiscount) => cartDiscount.isTaxExempted === true) ? cartSubtotal / vatDivisor - cartSubtotal : cartSubtotal - cartSubtotal / vatDivisor
+				const cartDiscountPercent = cartDiscounts.reduce((accumulator, cartDiscount) => accumulator + parseInt(cartDiscount.percentage), 0)
+				const cartDiscountPrice = (cartSubtotal / vatDivisor) * (cartDiscountPercent / 100) * -1
+				const cartTotal = cartSubtotal + (cartVatPrice + cartDiscountPrice + serviceCharge)
 				const data = {
 					...cart,
 					items: cartItems,
 					count: cartCount,
 					subtotal: cartSubtotal,
+					vat,
 					vatPrice: cartVatPrice,
 					discountPercent: cartDiscountPercent,
 					discountPrice: cartDiscountPrice,
+					serviceCharge,
 					total: cartTotal,
 				}
 				handleAddToCart(data)
@@ -114,47 +133,45 @@ const TransactionPage = () => {
 							return cartItem.id === item.id || checkedMenuOption.indexOf(cartItem.id) > -1
 						})
 						.map((cartItem) => {
-							const categoryNames = categories
-								.filter((category) => cartItem.categories.indexOf(category.id) > -1)
-								.map((category) => category.name)
-								.join(', ')
+							const categoryNames = cartItem.categories.map((category) => category.name).join(', ')
 							const size = cartItem.sizes[sizeIndex > -1 ? sizeIndex : 0]
 							return {
 								id: cartItem.id,
-								name: truncate(cartItem.name, 30),
-								price: cartItem.price,
-								stocks: cartItem.stocks,
+								name: cartItem.name,
+								price: parseFloat(cartItem.price),
+								stocks: parseInt(cartItem.stocks),
 								qty: 1,
 								size,
-								categories: truncate(categoryNames, 30),
+								categories: categoryNames,
 							}
 						})
 				)
 				const cartCount = cartItems.reduce((accumulator, cartItem) => accumulator + cartItem.qty, 0)
-				const cartSubtotal = cartItems.reduce((accumulator, cartItem) => accumulator + cartItem.price * cartItem.qty, 0)
+				const cartSubtotal = cartItems.reduce((accumulator, cartItem) => accumulator + parseFloat(cartItem.price) * cartItem.qty, 0)
 				const cartDiscounts = cart.discounts
-				const vat = (100 + cart.vat) / 100
-				const cartVatPrice = cartDiscounts.find((cartDiscount) => cartDiscount.isTaxExempted === true) ? cartSubtotal / vat - cartSubtotal : cartSubtotal - cartSubtotal / vat
-				const cartDiscountPercent = cartDiscounts.reduce((accumulator, cartDiscount) => accumulator + cartDiscount.percentage, 0)
-				const cartDiscountPrice = (cartSubtotal / vat) * (cartDiscountPercent / 100) * -1
-				const cartTotal = cartSubtotal + (cartVatPrice + cartDiscountPrice + cart.serviceCharge)
+				const cartVatPrice = cartDiscounts.find((cartDiscount) => cartDiscount.isTaxExempted === true) ? cartSubtotal / vatDivisor - cartSubtotal : cartSubtotal - cartSubtotal / vatDivisor
+				const cartDiscountPercent = cartDiscounts.reduce((accumulator, cartDiscount) => accumulator + parseInt(cartDiscount.percentage), 0)
+				const cartDiscountPrice = (cartSubtotal / vatDivisor) * (cartDiscountPercent / 100) * -1
+				const cartTotal = cartSubtotal + (cartVatPrice + cartDiscountPrice + serviceCharge)
 				const data = {
 					...cart,
 					items: cartItems,
 					count: cartCount,
 					subtotal: cartSubtotal,
+					vat,
 					vatPrice: cartVatPrice,
 					discountPercent: cartDiscountPercent,
 					discountPrice: cartDiscountPrice,
+					serviceCharge,
 					total: cartTotal,
 				}
 				handleAddToCart(data)
 			}
 		},
-		[cart, setOpenOutofStock, handleAddToCart]
+		[cart, menu, handleAddToCart, settings]
 	)
 	const handleMenuClick = (item) => {
-		if (item.sizes.length > 1 || item.sideDishes.length > 0) {
+		if (item?.sizes?.length > 1 || item?.sideDishes?.length > 0) {
 			setMenuOption(item)
 			setOpenMenuOption(true)
 		} else {
@@ -163,46 +180,55 @@ const TransactionPage = () => {
 	}
 	const handleAddDiscount = useCallback(
 		(cart, discount) => {
+			const vat = parseInt(settings.vat)
+			const vatDivisor = (100 + vat) / 100
+			const serviceCharge = parseFloat(settings.serviceCharge)
 			if (cart.items.length > 0) {
 				const discountItem = cart.discounts.find((cartDiscount) => cartDiscount.id === discount.id)
 				if (discountItem) {
 					const cartDiscounts = cart.discounts.filter((cartDiscount) => cartDiscount.id !== discountItem.id)
-					const vat = (100 + cart.vat) / 100
-					const cartVatPrice = cartDiscounts.find((cartDiscount) => cartDiscount.isTaxExempted === true) ? cart.subtotal / vat - cart.subtotal : cart.subtotal - cart.subtotal / vat
-					const cartDiscountPercent = cartDiscounts.reduce((accumulator, cartDiscount) => accumulator + cartDiscount.percentage, 0)
-					const cartDiscountPrice = (cart.subtotal / vat) * (cartDiscountPercent / 100) * -1
-					const cartTotal = cart.subtotal + (cartVatPrice + cartDiscountPrice + cart.serviceCharge)
+					const cartVatPrice = cartDiscounts.find((cartDiscount) => cartDiscount.isTaxExempted === true) ? cart.subtotal / vatDivisor - cart.subtotal : cart.subtotal - cart.subtotal / vatDivisor
+					const cartDiscountPercent = cartDiscounts.reduce((accumulator, cartDiscount) => accumulator + parseInt(cartDiscount.percentage), 0)
+					const cartDiscountPrice = (cart.subtotal / vatDivisor) * (cartDiscountPercent / 100) * -1
+					const cartTotal = cart.subtotal + (cartVatPrice + cartDiscountPrice + serviceCharge)
 					const data = {
 						...cart,
 						discounts: cartDiscounts,
+						vat,
 						vatPrice: cartVatPrice,
 						discountPercent: cartDiscountPercent,
 						discountPrice: cartDiscountPrice,
+						serviceCharge,
 						total: cartTotal,
 					}
 					handleAddToCart(data)
 				} else {
 					const cartDiscounts = cart.discounts.concat(discount)
-					const vat = (100 + cart.vat) / 100
-					const cartVatPrice = cartDiscounts.find((cartDiscount) => cartDiscount.isTaxExempted === true) ? cart.subtotal / vat - cart.subtotal : cart.subtotal - cart.subtotal / vat
-					const cartDiscountPercent = cartDiscounts.reduce((accumulator, cartDiscount) => accumulator + cartDiscount.percentage, 0)
-					const cartDiscountPrice = (cart.subtotal / vat) * (cartDiscountPercent / 100) * -1
-					const cartTotal = cart.subtotal + (cartVatPrice + cartDiscountPrice + cart.serviceCharge)
+					const cartVatPrice = cartDiscounts.find((cartDiscount) => cartDiscount.isTaxExempted === true) ? cart.subtotal / vatDivisor - cart.subtotal : cart.subtotal - cart.subtotal / vatDivisor
+					const cartDiscountPercent = cartDiscounts.reduce((accumulator, cartDiscount) => accumulator + parseInt(cartDiscount.percentage), 0)
+					const cartDiscountPrice = (cart.subtotal / vatDivisor) * (cartDiscountPercent / 100) * -1
+					const cartTotal = cart.subtotal + (cartVatPrice + cartDiscountPrice + serviceCharge)
 					const data = {
 						...cart,
 						discounts: cartDiscounts,
+						vat,
 						vatPrice: cartVatPrice,
 						discountPercent: cartDiscountPercent,
 						discountPrice: cartDiscountPrice,
+						serviceCharge,
 						total: cartTotal,
 					}
 					handleAddToCart(data)
 				}
 			} else {
-				setOpenAddDiscounts(true)
+				setSnackbar({
+					open: true,
+					severity: 'warning',
+					message: 'Cart is empty',
+				})
 			}
 		},
-		[handleAddToCart]
+		[handleAddToCart, settings]
 	)
 	const handleDeleteItemFromCart = useCallback(
 		(cart, item) => {
@@ -212,35 +238,16 @@ const TransactionPage = () => {
 				items: cartItems,
 			}
 			handleAddToCart(data)
-			setOpenDeleteFromCart(true)
 		},
 		[handleAddToCart]
 	)
-	const handleOutOfStockClose = () => {
-		setOpenOutofStock(false)
-	}
-	const handleAddDiscountClose = () => {
-		setOpenAddDiscounts(false)
-	}
-	const handleAddToCartClose = () => {
-		setOpenAddToCart(false)
-	}
-	const handleDeleteItemFromCartClose = () => {
-		setOpenDeleteFromCart(false)
-	}
+	const handleResetCart = useCallback(() => {
+		setCart(initialValues)
+	}, [setCart, initialValues])
 	return (
 		<LayoutComponent>
-			<SnackbarComponent open={openOutofStock} onClose={handleOutOfStockClose} severity='warning'>
-				Out of Stock
-			</SnackbarComponent>
-			<SnackbarComponent open={openAddDiscounts} onClose={handleAddDiscountClose} severity='warning'>
-				0 menu orders
-			</SnackbarComponent>
-			<SnackbarComponent open={openDeleteItemFromcart} onClose={handleDeleteItemFromCartClose} severity='warning'>
-				Successfully deleted from cart
-			</SnackbarComponent>
-			<SnackbarComponent open={openAddToCart} onClose={handleAddToCartClose} severity='success'>
-				Successfully added to Cart
+			<SnackbarComponent open={snackbar.open} onClose={handleSnackbar} severity={snackbar.severity}>
+				{snackbar.message}
 			</SnackbarComponent>
 			<MenuOptionComponent menuOption={menuOption} openMenuOption={openMenuOption} closeMenuOption={() => setOpenMenuOption(false)} handleCartUpdate={handleCartUpdate} />
 			<Grid container spacing={3}>
@@ -248,7 +255,7 @@ const TransactionPage = () => {
 					<Paper elevation={0} sx={{ height: '100%', borderRadius: '1rem' }}>
 						<Box sx={{ width: '100%' }}>
 							<Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-								<Tabs value={tabValue} variant='scrollable' scrollButtons='auto' onChange={handleTabChange} aria-label='menu tabs'>
+								<Tabs value={tabValue} variant='scrollable' scrollButtons='auto' onChange={handleTabChange} aria-label='menu tabs' sx={{ maxWidth: '75vw' }}>
 									<Tab label='All' {...a11yProps(0)} />
 									<Tab label='Discounts' {...a11yProps(1)} />
 									{categories.map((category, key) => (
@@ -308,7 +315,7 @@ const TransactionPage = () => {
 					</Paper>
 				</Grid>
 				<Grid item xs={12} lg={4} xl={3}>
-					<CartComponent cart={cart} handleCartUpdate={handleCartUpdate} handleDeleteItemFromCart={handleDeleteItemFromCart} />
+					<CartComponent cart={cart} setSnackbar={setSnackbar} handleCartUpdate={handleCartUpdate} handleDeleteItemFromCart={handleDeleteItemFromCart} handleResetCart={handleResetCart} />
 				</Grid>
 			</Grid>
 		</LayoutComponent>

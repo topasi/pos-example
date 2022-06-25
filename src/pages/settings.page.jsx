@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import * as yup from 'yup'
 import { useFormik } from 'formik'
 import { colors, Stack, Grid, Box, Paper, InputLabel, Button, Typography, InputAdornment, FormGroup, FormControl, FormHelperText, OutlinedInput } from '@mui/material'
@@ -9,11 +9,14 @@ import LayoutComponent from '../components/layout.component'
 const SettingsPage = () => {
 	const { settings, handleCreateSettings } = useSettings()
 	const [disabled, setDisabled] = useState(false)
-	const initialValues = {
-		currency: settings.currency,
-		vat: settings.vat,
-		serviceCharge: settings.serviceCharge,
-	}
+	const initialValues = useMemo(
+		() => ({
+			currency: settings.currency,
+			vat: settings.vat,
+			serviceCharge: settings.serviceCharge,
+		}),
+		[settings]
+	)
 	const validationSchema = yup.object().shape({
 		currency: yup.string().typeError('The currency is invalid').required('The currency is required'),
 		vat: yup.number().typeError('The VAT is invalid').required('The VAT is required'),

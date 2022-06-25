@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import * as yup from 'yup'
 import { useFormik } from 'formik'
 import { colors, Stack, Grid, Box, Paper, InputLabel, Button, Typography, FormGroup, FormControl, FormHelperText, OutlinedInput } from '@mui/material'
@@ -28,9 +28,12 @@ const CategoriesPage = () => {
 	const handleCloseDeleteDialog = useCallback(() => {
 		setDeleteDialog((prev) => ({ ...prev, open: false }))
 	}, [setDeleteDialog])
-	const initialValues = {
-		name: '',
-	}
+	const initialValues = useMemo(
+		() => ({
+			name: '',
+		}),
+		[]
+	)
 	const validationSchema = yup.object().shape({
 		name: yup.string().typeError('The name is invalid').required('The name is required'),
 	})

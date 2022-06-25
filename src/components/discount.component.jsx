@@ -89,7 +89,7 @@ const DiscountComponent = ({ cart, discount, selected, handleAddDiscount, handle
 						sx={{
 							position: 'absolute',
 							bottom: '1rem',
-							fontSize: '12px',
+							fontSize: '11px',
 							color: colors.yellow[500],
 							letterSpacing: '5px',
 						}}
