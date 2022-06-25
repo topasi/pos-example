@@ -51,8 +51,8 @@ const DiscountsPage = () => {
 	})
 	return (
 		<LayoutComponent>
-			<DialogComponent open={deleteDialog.open} onClose={handleCloseDeleteDialog} deleteId={deleteDialog.id} handleDeleteDialog={handleDeleteDiscount} setDeleteDialog={setDeleteDialog} title='Are you sure?'>
-				This will be permanently removed from our record and you won't get it back. Do you really want to delete?
+			<DialogComponent open={deleteDialog.open} onClose={handleCloseDeleteDialog} deleteId={deleteDialog.id} handleDeleteDialog={handleDeleteDiscount} setDeleteDialog={setDeleteDialog} title='Delete Discount'>
+				Are you sure you want to delete this discount? You will not be able to recover this once deleted.
 			</DialogComponent>
 			<Stack spacing={4} width='100%'>
 				<Grid container>

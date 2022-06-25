@@ -11,6 +11,7 @@ import brandFullWhite from '../assets/brand-full-white.png'
 import useCategories from '../hooks/useCategories'
 import useDiscounts from '../hooks/useDiscounts'
 import useMenu from '../hooks/useMenu'
+import useOrders from '../hooks/useOrders'
 
 const IconButton = styled(Button)(({ selected, theme }) => ({
 	minWidth: 0,
@@ -108,6 +109,7 @@ const NavbarComponent = ({ drawerWidth, openDrawer, handleClickDrawer }) => {
 	const { handleSearchCategory } = useCategories()
 	const { handleSearchDiscount } = useDiscounts()
 	const { handleSearchMenu } = useMenu()
+	const { handleSearchOrder } = useOrders()
 	const allowedSearch = [router.categories.path, router.menu.path, router.discounts.path, router.transaction.path, router.orders.path]
 	const handleOpenSearchBox = () => {
 		setOpenSearchBox((prev) => !prev)
@@ -126,6 +128,9 @@ const NavbarComponent = ({ drawerWidth, openDrawer, handleClickDrawer }) => {
 		if (router.transaction.path === location.pathname) {
 			handleSearchDiscount(keyword)
 			handleSearchMenu(keyword)
+		}
+		if (router.orders.path === location.pathname) {
+			handleSearchOrder(keyword)
 		}
 	}
 	return (

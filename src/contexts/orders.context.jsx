@@ -63,7 +63,7 @@ export const OrdersProvider = ({ children }) => {
 							setSnackbar({
 								open: true,
 								severity: 'warning',
-								message: 'Successfully deleted a orders',
+								message: 'Successfully deleted a order',
 							})
 						})
 						.catch(handleError)
@@ -78,7 +78,7 @@ export const OrdersProvider = ({ children }) => {
 			})
 			.catch(handleError)
 	}
-	const handleSearchCategory = (keyword) => {
+	const handleSearchOrder = (keyword) => {
 		setKeyword(lowerCase(keyword))
 	}
 	useEffect(() => {
@@ -108,7 +108,7 @@ export const OrdersProvider = ({ children }) => {
 			.catch(handleError)
 	}, [orders, keyword])
 	return (
-		<OrdersContext.Provider value={{ orders, handleCreateOrder, handleDeleteOrder, handleSearchCategory }}>
+		<OrdersContext.Provider value={{ orders, handleCreateOrder, handleDeleteOrder, handleSearchOrder }}>
 			<SnackbarComponent open={snackbar.open} onClose={handleSnackbar} severity={snackbar.severity}>
 				{snackbar.message}
 			</SnackbarComponent>

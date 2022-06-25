@@ -66,7 +66,8 @@ const CartComponent = ({ cart, setSnackbar, handleCartUpdate, handleDeleteItemFr
 			if (cash) {
 				setPayment(cash)
 				setChange(cash - total)
-			} else {
+			}
+			if (!cash && cash !== undefined) {
 				setPayment(0)
 				setChange(0)
 			}

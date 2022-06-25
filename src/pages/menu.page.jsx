@@ -82,8 +82,8 @@ const MenuPage = () => {
 	}, [setModal])
 	return (
 		<LayoutComponent>
-			<DialogComponent open={deleteDialog.open} onClose={handleCloseDeleteDialog} deleteId={deleteDialog.id} handleDeleteDialog={handleDeleteMenu} setDeleteDialog={setDeleteDialog} title='Are you sure?'>
-				This will be permanently removed from our record and you won't get it back. Do you really want to delete?
+			<DialogComponent open={deleteDialog.open} onClose={handleCloseDeleteDialog} deleteId={deleteDialog.id} handleDeleteDialog={handleDeleteMenu} setDeleteDialog={setDeleteDialog} title='Delete Menu'>
+				Are you sure you want to delete this menu? You will not be able to recover this once deleted.
 			</DialogComponent>
 			<MenuCreateComponent sideDishes={menu} menu={modal.menu} open={modal.open} handleCloseMenuModal={handleCloseMenuModal} handleCreateMenu={handleCreateMenu} handleUpdateMenu={handleUpdateMenu} />
 			<Stack spacing={4} width='100%'>
@@ -131,7 +131,7 @@ const MenuPage = () => {
 											<TableCell align='center' sx={{ width: '35px' }}>
 												<ImageIcon sx={{ position: 'relative', top: '4px' }} />
 											</TableCell>
-											<TableCell>ID</TableCell>
+											<TableCell sx={{ width: '250px' }}>ID</TableCell>
 											<TableCell>Name</TableCell>
 											<TableCell>Date Created</TableCell>
 											<TableCell>Side Dishes</TableCell>

@@ -1,12 +1,16 @@
 import React, { useCallback, useState } from 'react'
-import { styled, colors, Stack, Grid, Box, Paper, ButtonGroup, Button, Typography, Table, TableBody, TableContainer, TableHead, Avatar, Chip } from '@mui/material'
+import moment from 'moment'
+import { upperFirst } from 'lodash'
+import { styled, colors, Stack, Grid, Box, Paper, ButtonGroup, Button, Typography, Table, TableBody, TableContainer, TableHead, Collapse, IconButton } from '@mui/material'
 import MuiTableCell, { tableCellClasses } from '@mui/material/TableCell'
 import MuiTableRow from '@mui/material/TableRow'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 
-import { categories, menu } from '../data'
+import useOrders from '../hooks/useOrders'
 import LayoutComponent from '../components/layout.component'
 import CurrencyTypographyComponent from '../components/currency-typography.component'
-import { upperFirst } from 'lodash'
+import DialogComponent from '../components/dialog.component'
 
 const TableCell = styled(MuiTableCell)(({ theme }) => ({
 	'&:first-of-type': {
@@ -33,9 +37,120 @@ const TableRow = styled(MuiTableRow)(({ theme }) => ({
 	},
 }))
 
+const Row = ({ order, handleOpenDeleteDialog }) => {
+	const [open, setOpen] = useState(false)
+	return (
+		<>
+			<MuiTableRow
+				key={order.id}
+				sx={{
+					verticalAlign: 'middle',
+				}}
+			>
+				<TableCell>
+					<IconButton aria-label='expand row' size='small' onClick={() => setOpen(!open)}>
+						{open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+					</IconButton>
+				</TableCell>
+				<TableCell>{order.id}</TableCell>
+				<TableCell>{moment(order.createdAt, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD HH:mm')}</TableCell>
+				<TableCell>Cash</TableCell>
+				<TableCell align='right'>
+					<CurrencyTypographyComponent value={order.vatPrice} />({order.vat}%)
+				</TableCell>
+				<TableCell align='right' sx={{ whiteSpace: 'nowrap' }}>
+					<CurrencyTypographyComponent value={order.discountPrice} />({order.discountPercent}%)
+				</TableCell>
+				<TableCell align='right'>
+					<CurrencyTypographyComponent value={order.serviceCharge} />
+				</TableCell>
+				<TableCell align='right'>
+					<CurrencyTypographyComponent value={order.total} />
+				</TableCell>
+				<TableCell align='right'>
+					<ButtonGroup variant='outlined' aria-label='text button group' size='small'>
+						<Button onClick={() => handleOpenDeleteDialog(order.id)}>Delete</Button>
+					</ButtonGroup>
+				</TableCell>
+			</MuiTableRow>
+			<MuiTableRow
+				sx={{
+					verticalAlign: 'top',
+				}}
+			>
+				<TableCell colSpan={10} style={{ paddingBottom: 0, paddingTop: 0 }}>
+					<Collapse in={open} timeout='auto' unmountOnExit>
+						<Box sx={{ margin: 1 }}>
+							<Typography variant='h6' gutterBottom component='div'>
+								History
+							</Typography>
+							<Table size='small' aria-label='purchases' sx={{ marginBottom: '1rem' }}>
+								<TableHead>
+									<MuiTableRow
+										sx={{
+											'& .MuiTableCell-root': {
+												fontWeight: '700',
+											},
+										}}
+									>
+										<MuiTableCell sx={{ width: '250px' }}>ID</MuiTableCell>
+										<MuiTableCell>Menu</MuiTableCell>
+										<MuiTableCell>Size</MuiTableCell>
+										<MuiTableCell align='right'>Price</MuiTableCell>
+										<MuiTableCell align='right'>Qty</MuiTableCell>
+										<MuiTableCell align='right'>Total Price</MuiTableCell>
+									</MuiTableRow>
+								</TableHead>
+								<TableBody>
+									{order.items.map((item) => (
+										<MuiTableRow key={item.id}>
+											<TableCell component='th' scope='row'>
+												{item.id}
+											</TableCell>
+											<TableCell>{item.name}</TableCell>
+											<TableCell>{upperFirst(item.size)}</TableCell>
+											<TableCell align='right'>
+												<CurrencyTypographyComponent value={item.price} />
+											</TableCell>
+											<TableCell align='right'>{item.qty}</TableCell>
+											<TableCell align='right'>
+												<CurrencyTypographyComponent value={item.price * item.qty} />
+											</TableCell>
+										</MuiTableRow>
+									))}
+								</TableBody>
+							</Table>
+						</Box>
+					</Collapse>
+				</TableCell>
+			</MuiTableRow>
+		</>
+	)
+}
+
 const OrdersPage = () => {
+	const { orders, handleDeleteOrder } = useOrders()
+	const [deleteDialog, setDeleteDialog] = useState({
+		open: false,
+		id: '',
+	})
+	const handleOpenDeleteDialog = useCallback(
+		(id) => {
+			setDeleteDialog({
+				open: true,
+				id,
+			})
+		},
+		[setDeleteDialog]
+	)
+	const handleCloseDeleteDialog = useCallback(() => {
+		setDeleteDialog((prev) => ({ ...prev, open: false }))
+	}, [setDeleteDialog])
 	return (
 		<LayoutComponent>
+			<DialogComponent open={deleteDialog.open} onClose={handleCloseDeleteDialog} deleteId={deleteDialog.id} handleDeleteDialog={handleDeleteOrder} setDeleteDialog={setDeleteDialog} title='Delete Order'>
+				Are you sure you want to delete this order? You will not be able to recover this once deleted.
+			</DialogComponent>
 			<Stack spacing={4} width='100%'>
 				<Grid container>
 					<Grid item xs={12}>
@@ -53,20 +168,40 @@ const OrdersPage = () => {
 							<TableContainer component={Paper} elevation={0}>
 								<Table sx={{ minWidth: 700 }} aria-label='customized table'>
 									<TableHead>
-										<TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
-											<TableCell>ID</TableCell>
-											<TableCell>Name</TableCell>
-											<TableCell>Side Dishes</TableCell>
-											<TableCell>Categories</TableCell>
-											<TableCell>Sizes</TableCell>
-											<TableCell align='right'>Price</TableCell>
-											<TableCell align='right'>Stocks</TableCell>
-											<TableCell align='right' sx={{ paddingRight: '100px' }}>
+										<TableRow
+											sx={{
+												'& > *': { borderBottom: 'unset' },
+												'& .MuiTableCell-root': {
+													whiteSpace: 'nowrap',
+												},
+											}}
+										>
+											<TableCell sx={{ width: '35px' }}></TableCell>
+											<TableCell sx={{ width: '250px' }}>ID</TableCell>
+											<TableCell>Date Created</TableCell>
+											<TableCell>Payment Method</TableCell>
+											<TableCell align='right'>VAT</TableCell>
+											<TableCell align='right'>Discount</TableCell>
+											<TableCell align='right'>Service Charge</TableCell>
+											<TableCell align='right'>Total Amount</TableCell>
+											<TableCell align='right' sx={{ paddingRight: '35px' }}>
 												Action
 											</TableCell>
 										</TableRow>
 									</TableHead>
-									<TableBody></TableBody>
+									<TableBody>
+										{orders.length > 0 ? (
+											orders.map((order) => <Row order={order} key={order.id} handleOpenDeleteDialog={handleOpenDeleteDialog} />)
+										) : (
+											<MuiTableRow>
+												<TableCell colSpan={10}>
+													<Typography variant='body2' textAlign='center' sx={{ color: colors.grey[700] }}>
+														There's no orders available
+													</Typography>
+												</TableCell>
+											</MuiTableRow>
+										)}
+									</TableBody>
 								</Table>
 							</TableContainer>
 						</Paper>
