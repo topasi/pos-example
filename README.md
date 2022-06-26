@@ -2,7 +2,7 @@
 
 ## Environment
 
-#### Set up .env file in your location machine
+#### Set up .env file in your local machine
 
 ```
 REACT_APP_FIREBASE_API_KEY=
