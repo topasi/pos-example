@@ -1,8 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react'
 import { lowerCase } from 'lodash'
-import { ref, set, get, remove, query, orderByChild } from 'firebase/database'
-import moment from 'moment'
-import { v4 as uuidv4 } from 'uuid'
+import { ref, get, remove, query, orderByChild } from 'firebase/database'
 
 import { db } from '../firebase'
 import { router } from '../router'
@@ -28,30 +26,6 @@ export const OrdersProvider = ({ children }) => {
 			severity: 'error',
 			message: 'Oops! something went wrong',
 		})
-	}
-	const handleCreateOrder = (values, setDisabled, setCartItems, setCartCount, setCartSubTotal, setvatPrice, setDiscountPercent, setTotal, setChange, setPayment, handleResetCart) => {
-		values.id = uuidv4()
-		values.createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
-		values.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
-		set(ref(db, `${router.orders.path}/${values.id}`), values)
-			.then(() => {
-				setDisabled(false)
-				setSnackbar({
-					open: true,
-					severity: 'success',
-					message: 'Successfully created an order',
-				})
-				setCartItems([])
-				setCartCount(0)
-				setCartSubTotal(0)
-				setvatPrice(0)
-				setDiscountPercent(0)
-				setTotal(0)
-				setChange(0)
-				setPayment(0)
-				handleResetCart()
-			})
-			.catch(handleError)
 	}
 	const handleDeleteOrder = (id, setDeleteDialog) => {
 		get(ref(db, `${router.orders.path}/${id}`))
@@ -108,7 +82,7 @@ export const OrdersProvider = ({ children }) => {
 			.catch(handleError)
 	}, [orders, keyword])
 	return (
-		<OrdersContext.Provider value={{ orders, handleCreateOrder, handleDeleteOrder, handleSearchOrder }}>
+		<OrdersContext.Provider value={{ orders, handleDeleteOrder, handleSearchOrder }}>
 			<SnackbarComponent open={snackbar.open} onClose={handleSnackbar} severity={snackbar.severity}>
 				{snackbar.message}
 			</SnackbarComponent>

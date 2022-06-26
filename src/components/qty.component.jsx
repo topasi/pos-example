@@ -3,13 +3,16 @@ import { ButtonGroup, Button } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 
-const QtyComponent = ({ item, index, handleElQty, handleIncreaseQtyChange, handleReduceQtyChange }) => {
+import useCart from '../hooks/useCart'
+
+const QtyComponent = ({ item }) => {
+	const { handleIncreaseCartItemQty, handleDecreaseCartItemQty } = useCart()
 	return (
-		<ButtonGroup size='small' sx={{ height: '25px' }} disableElevation>
+		<ButtonGroup size='small' sx={{ height: '25px', opacity: item.price > 0 ? 1 : 0 }} disableElevation>
 			<Button
 				variant='contained'
 				aria-label='reduce'
-				onClick={() => handleReduceQtyChange(item, index)}
+				onClick={() => handleDecreaseCartItemQty(item.id)}
 				sx={{
 					width: '30px',
 					minWidth: '0 !important',
@@ -27,12 +30,12 @@ const QtyComponent = ({ item, index, handleElQty, handleIncreaseQtyChange, handl
 				}}
 				disableElevation
 			>
-				<span ref={(el) => handleElQty(el)}>{item.qty}</span>
+				{item.qty}
 			</Button>
 			<Button
 				variant='contained'
 				aria-label='increase'
-				onClick={() => handleIncreaseQtyChange(item, index)}
+				onClick={() => handleIncreaseCartItemQty(item.id)}
 				sx={{
 					width: '30px',
 					minWidth: '0 !important',

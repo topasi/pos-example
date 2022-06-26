@@ -1,10 +1,11 @@
 import React, { createContext, useState, useEffect } from 'react'
 import { lowerCase } from 'lodash'
 import { ref, set, get, update, remove, query, orderByChild } from 'firebase/database'
+import { ref as sRef, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage'
 import moment from 'moment'
 import { v4 as uuidv4 } from 'uuid'
 
-import { db } from '../firebase'
+import { db, storage } from '../firebase'
 import { router } from '../router'
 import SnackbarComponent from '../components/snackbar.component'
 
@@ -29,39 +30,87 @@ export const MenuProvider = ({ children }) => {
 			message: 'Oops! something went wrong',
 		})
 	}
-	const handleCreateMenu = (values, resetForm, setDisabled, handleCloseMenuModal) => {
+	const handleCreateMenu = (values, resetForm, setDisabled, setFiles, handleCloseMenuModal) => {
 		values.id = uuidv4()
 		values.createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
 		values.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
-		set(ref(db, `${router.menu.path}/${values.id}`), values)
-			.then(() => {
-				setDisabled(false)
-				handleCloseMenuModal()
-				setSnackbar({
-					open: true,
-					severity: 'success',
-					message: 'Successfully created a menu',
+		const storeData = (data) => {
+			set(ref(db, `${router.menu.path}/${data.id}`), data)
+				.then(() => {
+					setDisabled(false)
+					handleCloseMenuModal()
+					setSnackbar({
+						open: true,
+						severity: 'success',
+						message: 'Successfully created a menu',
+					})
+					resetForm()
+					setFiles([])
 				})
-				resetForm()
-			})
-			.catch(handleError)
+				.catch(handleError)
+		}
+		if (values.image) {
+			uploadBytes(sRef(storage, `${router.menu.path}/${values.id}`), values.image)
+				.then((snapshot) => {
+					console.log(snapshot)
+					getDownloadURL(snapshot.ref)
+						.then((url) => {
+							storeData({ ...values, image: url })
+						})
+						.catch(handleError)
+				})
+				.catch(handleError)
+		} else {
+			storeData({ ...values, image: '' })
+		}
 	}
-	const handleUpdateMenu = (id, values, resetForm, setDisabled, handleCloseMenuModal) => {
+	const handleUpdateMenu = (id, values, resetForm, setDisabled, setFiles, handleCloseMenuModal) => {
 		get(ref(db, `${router.menu.path}/${id}`))
 			.then((snapshot) => {
 				if (snapshot.exists()) {
-					update(ref(db, `${router.menu.path}/${id}`), values)
-						.then(() => {
-							setDisabled(false)
-							handleCloseMenuModal()
-							setSnackbar({
-								open: true,
-								severity: 'success',
-								message: 'Successfully deleted a menu',
+					const value = snapshot.val()
+					const image = value?.image ? value.image : ''
+					const updateData = (data) => {
+						update(ref(db, `${router.menu.path}/${id}`), data)
+							.then(() => {
+								setDisabled(false)
+								handleCloseMenuModal()
+								setSnackbar({
+									open: true,
+									severity: 'success',
+									message: 'Successfully deleted a menu',
+								})
+								resetForm()
+								setFiles([])
 							})
-							resetForm()
-						})
-						.catch(handleError)
+							.catch(handleError)
+					}
+					const uploadImage = () => {
+						uploadBytes(sRef(storage, `${router.menu.path}/${id}`), values.image)
+							.then((snapshot) => {
+								getDownloadURL(snapshot.ref)
+									.then((url) => {
+										updateData({ ...values, image: url })
+									})
+									.catch(handleError)
+							})
+							.catch(handleError)
+					}
+					if (values.image) {
+						getDownloadURL(sRef(storage, `${router.menu.path}/${id}`))
+							.then(() => {
+								deleteObject(sRef(storage, `${router.menu.path}/${id}`))
+									.then(() => {
+										uploadImage()
+									})
+									.catch(handleError)
+							})
+							.catch(() => {
+								uploadImage()
+							})
+					} else {
+						updateData({ ...values, image })
+					}
 				} else {
 					setDisabled(false)
 					setSnackbar({
@@ -77,16 +126,29 @@ export const MenuProvider = ({ children }) => {
 		get(ref(db, `${router.menu.path}/${id}`))
 			.then((snapshot) => {
 				if (snapshot.exists()) {
-					remove(ref(db, `${router.menu.path}/${id}`))
-						.then(() => {
-							setDeleteDialog(false)
-							setSnackbar({
-								open: true,
-								severity: 'warning',
-								message: 'Successfully deleted a menu',
+					const deleteData = () => {
+						remove(ref(db, `${router.menu.path}/${id}`))
+							.then(() => {
+								setDeleteDialog(false)
+								setSnackbar({
+									open: true,
+									severity: 'warning',
+									message: 'Successfully deleted a menu',
+								})
 							})
+							.catch(handleError)
+					}
+					getDownloadURL(sRef(storage, `${router.menu.path}/${id}`))
+						.then(() => {
+							deleteObject(sRef(storage, `${router.menu.path}/${id}`))
+								.then(() => {
+									deleteData()
+								})
+								.catch(handleError)
 						})
-						.catch(handleError)
+						.catch(() => {
+							deleteData()
+						})
 				} else {
 					setDeleteDialog(false)
 					setSnackbar({

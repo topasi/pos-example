@@ -2,13 +2,6 @@ import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { styled, Drawer, Toolbar, Box, List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
 import MuiListItemButton from '@mui/material/ListItemButton'
-import DashboardIcon from '@mui/icons-material/Dashboard'
-import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu'
-import PercentIcon from '@mui/icons-material/Percent'
-import MenuBookIcon from '@mui/icons-material/MenuBook'
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
-import FoodBankIcon from '@mui/icons-material/FoodBank'
-import SettingsIcon from '@mui/icons-material/Settings'
 
 import { router } from '../router'
 
@@ -50,62 +43,16 @@ const SidebarComponent = ({ drawerWidth, openDrawer }) => {
 			<Toolbar variant='dense' />
 			<Box sx={{ overflow: 'auto' }}>
 				<List component='nav'>
-					<ListItem>
-						<ListItemButton component={Link} to={router.dashboard.path} selected={location.pathname.indexOf(router.dashboard.path) > -1}>
-							<ListItemIcon>
-								<DashboardIcon />
-							</ListItemIcon>
-							<ListItemText primary={router.dashboard.name} />
-						</ListItemButton>
-					</ListItem>
-					<ListItem>
-						<ListItemButton component={Link} to={router.categories.path} selected={location.pathname.indexOf(router.categories.path) > -1}>
-							<ListItemIcon>
-								<FoodBankIcon />
-							</ListItemIcon>
-							<ListItemText primary={router.categories.name} />
-						</ListItemButton>
-					</ListItem>
-					<ListItem>
-						<ListItemButton component={Link} to={router.menu.path} selected={location.pathname.indexOf(router.menu.path) > -1}>
-							<ListItemIcon>
-								<RestaurantMenuIcon />
-							</ListItemIcon>
-							<ListItemText primary={router.menu.name} />
-						</ListItemButton>
-					</ListItem>
-					<ListItem>
-						<ListItemButton component={Link} to={router.discounts.path} selected={location.pathname.indexOf(router.discounts.path) > -1}>
-							<ListItemIcon>
-								<PercentIcon />
-							</ListItemIcon>
-							<ListItemText primary={router.discounts.name} />
-						</ListItemButton>
-					</ListItem>
-					<ListItem>
-						<ListItemButton component={Link} to={router.transaction.path} selected={location.pathname.indexOf(router.transaction.path) > -1}>
-							<ListItemIcon>
-								<ReceiptLongIcon />
-							</ListItemIcon>
-							<ListItemText primary={router.transaction.name} />
-						</ListItemButton>
-					</ListItem>
-					<ListItem>
-						<ListItemButton component={Link} to={router.orders.path} selected={location.pathname.indexOf(router.orders.path) > -1}>
-							<ListItemIcon>
-								<MenuBookIcon />
-							</ListItemIcon>
-							<ListItemText primary={router.orders.name} />
-						</ListItemButton>
-					</ListItem>
-					<ListItem>
-						<ListItemButton component={Link} to={router.settings.path} selected={location.pathname.indexOf(router.settings.path) > -1}>
-							<ListItemIcon>
-								<SettingsIcon />
-							</ListItemIcon>
-							<ListItemText primary={router.settings.name} />
-						</ListItemButton>
-					</ListItem>
+					{Object.keys(router)
+						.filter((route) => route !== 'error')
+						.map((route) => (
+							<ListItem key={route}>
+								<ListItemButton component={Link} to={router[route].path} selected={location.pathname.indexOf(router[route].path) > -1}>
+									<ListItemIcon>{router[route].icon}</ListItemIcon>
+									<ListItemText primary={router[route].name} />
+								</ListItemButton>
+							</ListItem>
+						))}
 				</List>
 			</Box>
 		</Drawer>

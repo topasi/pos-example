@@ -7,9 +7,11 @@ import { styled, colors, Stack, Grid, Box, InputLabel, Button, Typography, Avata
 import placeholder from '../assets/placeholder.jpg'
 import useSettings from '../hooks/useSettings'
 import useCategories from '../hooks/useCategories'
+import useMenu from '../hooks/useMenu'
 import ModalComponent from '../components/modal.component'
 import AlertComponent from '../components/alert.component'
 import NumberFormatComponent from './number-format.component'
+import DropzoneComponent from './dropzone.component'
 
 const FormControlChip = styled(FormControl)(({ theme }) => ({
 	'& .MuiFormControlLabel-root': {
@@ -32,11 +34,12 @@ const sizes = ['small', 'regular', 'upsize']
 const MenuCreateComponent = ({ sideDishes, menu, open, handleCloseMenuModal, handleCreateMenu, handleUpdateMenu }) => {
 	const { settings } = useSettings()
 	const { categories } = useCategories()
+	const { menu: allMenu } = useMenu()
 	const [disabled, setDisabled] = useState(false)
+	const [files, setFiles] = useState([])
 	const initialValues = {
 		name: menu?.name ? menu.name : '',
 		description: menu?.description ? menu.description : '',
-		image: menu?.image ? menu.image : '',
 		price: menu?.price ? menu.price : 0,
 		stocks: menu?.stocks ? menu.stocks : 0,
 		categories: menu?.categories?.length > 0 ? menu.categories.map((category) => category.id) : [],
@@ -46,7 +49,6 @@ const MenuCreateComponent = ({ sideDishes, menu, open, handleCloseMenuModal, han
 	const validationSchema = yup.object().shape({
 		name: yup.string().typeError('The name is invalid').required('The name is required'),
 		description: yup.string().typeError('The description is invalid').required('The description is required'),
-		// image: yup.string().typeError('The image is invalid').required('The image is required'),
 		price: yup.number().typeError('The price is invalid').required('The price is required'),
 		stocks: yup.number().typeError('The stocks is invalid').required('The stocks is required'),
 		categories: yup.array().typeError('The categories is invalid').min(1, 'The categories is required'),
@@ -58,16 +60,21 @@ const MenuCreateComponent = ({ sideDishes, menu, open, handleCloseMenuModal, han
 		validationSchema: validationSchema,
 		enableReinitialize: true,
 		onSubmit(values, { props, resetForm, setErrors, setSubmitting }) {
+			values.image = files[0]
 			values.categories = categories.filter((category) => values.categories.includes(category.id))
 			values.sideDishes = sideDishes.filter((item) => values.sideDishes.includes(item.id))
 			setDisabled(true)
 			if (menu?.id) {
-				handleUpdateMenu(menu.id, values, resetForm, setDisabled, handleCloseMenuModal)
+				handleUpdateMenu(menu.id, values, resetForm, setDisabled, setFiles, handleCloseMenuModal)
 			} else {
-				handleCreateMenu(values, resetForm, setDisabled, handleCloseMenuModal)
+				handleCreateMenu(values, resetForm, setDisabled, setFiles, handleCloseMenuModal)
 			}
 		},
 	})
+	const handleFilter = (sideDish) => {
+		const data = allMenu.find((item) => item.id === sideDish.id)
+		return data?.stocks > 0 && data?.id !== menu?.id
+	}
 	return (
 		<ModalComponent open={open || false} onClose={handleCloseMenuModal} width='1280px'>
 			<Typography variant='h5' marginBottom='2rem' color={colors.grey[700]}>
@@ -91,26 +98,38 @@ const MenuCreateComponent = ({ sideDishes, menu, open, handleCloseMenuModal, han
 									Description *
 								</InputLabel>
 								<FormControl required error={formik.touched.description && Boolean(formik.errors.description)} variant='standard' fullWidth>
-									<OutlinedInput value={formik.values.description} onChange={formik.handleChange} id='description' multiline rows={4} sx={{ borderRadius: '.5rem' }} />
+									<OutlinedInput value={formik.values.description} onChange={formik.handleChange} id='description' multiline rows={3} sx={{ borderRadius: '.5rem' }} />
 									<FormHelperText>{formik.touched.description && formik.errors.description}</FormHelperText>
 								</FormControl>
 							</FormGroup>
 							<FormGroup>
-								<InputLabel htmlFor='price' sx={{ marginBottom: '.25rem' }}>
-									Price *
-								</InputLabel>
-								<FormControl required error={formik.touched.price && Boolean(formik.errors.price)} variant='standard' fullWidth>
-									<OutlinedInput value={formik.values.price} onChange={formik.handleChange} id='price' name='price' inputComponent={NumberFormatComponent} inputProps={{ currency: settings.currency }} sx={{ borderRadius: '.5rem' }} />
-									<FormHelperText>{formik.touched.price && formik.errors.price}</FormHelperText>
-								</FormControl>
+								<Stack spacing={2} direction='row' flexWrap='wrap'>
+									<Box flexGrow={1}>
+										<InputLabel htmlFor='price' sx={{ marginBottom: '.25rem' }}>
+											Price *
+										</InputLabel>
+										<FormControl required error={formik.touched.price && Boolean(formik.errors.price)} variant='standard' fullWidth>
+											<OutlinedInput value={formik.values.price} onChange={formik.handleChange} id='price' name='price' inputComponent={NumberFormatComponent} inputProps={{ currency: settings.currency }} sx={{ borderRadius: '.5rem' }} />
+											<FormHelperText>{formik.touched.price && formik.errors.price}</FormHelperText>
+										</FormControl>
+									</Box>
+									<Box flexGrow={1}>
+										<InputLabel htmlFor='stocks' sx={{ marginBottom: '.25rem' }}>
+											Stocks *
+										</InputLabel>
+										<FormControl required error={formik.touched.stocks && Boolean(formik.errors.stocks)} variant='standard' fullWidth>
+											<OutlinedInput value={formik.values.stocks} onChange={formik.handleChange} id='stocks' sx={{ borderRadius: '.5rem' }} />
+											<FormHelperText>{formik.touched.stocks && formik.errors.stocks}</FormHelperText>
+										</FormControl>
+									</Box>
+								</Stack>
 							</FormGroup>
 							<FormGroup>
 								<InputLabel htmlFor='stocks' sx={{ marginBottom: '.25rem' }}>
-									Stocks *
+									Image
 								</InputLabel>
-								<FormControl required error={formik.touched.stocks && Boolean(formik.errors.stocks)} variant='standard' fullWidth>
-									<OutlinedInput value={formik.values.stocks} onChange={formik.handleChange} id='stocks' sx={{ borderRadius: '.5rem' }} />
-									<FormHelperText>{formik.touched.stocks && formik.errors.stocks}</FormHelperText>
+								<FormControl required error={false} variant='standard' fullWidth>
+									<DropzoneComponent menu={menu} files={files} setFiles={setFiles} />
 								</FormControl>
 							</FormGroup>
 						</Stack>
@@ -121,7 +140,7 @@ const MenuCreateComponent = ({ sideDishes, menu, open, handleCloseMenuModal, han
 								<InputLabel htmlFor='stocks' sx={{ marginBottom: '.25rem' }}>
 									Side Dishes *
 								</InputLabel>
-								{sideDishes.length > 0 ? (
+								{sideDishes.filter(handleFilter).length > 0 ? (
 									<FormControl required error={formik.touched.sideDishes && Boolean(formik.errors.sideDishes)} variant='standard'>
 										<List
 											dense
@@ -134,19 +153,19 @@ const MenuCreateComponent = ({ sideDishes, menu, open, handleCloseMenuModal, han
 												'& ul': { padding: 0 },
 											}}
 										>
-											{sideDishes.map((item) => {
+											{sideDishes.filter(handleFilter).map((sideDish) => {
 												return (
 													<ListItem
-														key={item.id}
+														key={sideDish.id}
 														secondaryAction={
 															<Checkbox
 																edge='end'
 																onChange={formik.handleChange}
-																checked={formik.values.sideDishes.includes(item.id)}
+																checked={formik.values.sideDishes.includes(sideDish.id)}
 																name='sideDishes'
-																value={item.id}
+																value={sideDish.id}
 																inputProps={{
-																	'aria-labelledby': `checkbox-list-secondary-label-${item.id}`,
+																	'aria-labelledby': `checkbox-list-secondary-label-${sideDish.id}`,
 																}}
 															/>
 														}
@@ -159,9 +178,9 @@ const MenuCreateComponent = ({ sideDishes, menu, open, handleCloseMenuModal, han
 															}}
 														>
 															<ListItemAvatar>
-																<Avatar alt={item.name} src={item.image || placeholder} />
+																<Avatar alt={sideDish.name} src={sideDish.image || placeholder} />
 															</ListItemAvatar>
-															<ListItemText id={`checkbox-list-secondary-label-${item.id}`} primary={truncate(item.name, 30)} />
+															<ListItemText id={`checkbox-list-secondary-label-${sideDish.id}`} primary={truncate(sideDish.name, 30)} />
 														</ListItemButton>
 													</ListItem>
 												)

@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import { styled, colors, Stack, Paper, Typography, Grid } from '@mui/material'
+import React, { useCallback, useState } from 'react'
+import { styled, colors, Stack, Paper, Typography, ToggleButtonGroup } from '@mui/material'
 import MuiToggleButton from '@mui/material/ToggleButton'
 
+import useCart from '../hooks/useCart'
 import CurrencyTextFieldComponent from './currency-text-field.component'
 
 const ToggleButton = styled(MuiToggleButton)(({ theme }) => ({
@@ -11,31 +12,41 @@ const ToggleButton = styled(MuiToggleButton)(({ theme }) => ({
 	},
 }))
 
-const CashComponent = ({ cart, total, handleCashPayment }) => {
-	const [selected, setSelected] = useState(data.map(() => false))
-	const handleButtonChange = (index) => {
-		setSelected((prev) => prev.map((item, key) => (key === index ? !item : false)))
+const CashComponent = () => {
+	const { cart, setPayment, setChange } = useCart()
+	const [value, setValue] = useState('')
+	const [activeButton, setActiveButton] = useState('')
+	const handleActiveButton = (e, newActiveButton) => {
+		const value = e.target.innerText
+		if (newActiveButton === null) {
+			setValue('')
+		} else {
+			setValue(value)
+		}
+		setActiveButton(newActiveButton)
 	}
 	const handleInputChange = useCallback(
 		(value) => {
-			setSelected(data.map(() => false))
-			handleCashPayment(total, value)
+			if (value) {
+				setPayment(value)
+				setChange(value - cart.total)
+			} else {
+				setPayment(0)
+				setChange(0)
+			}
 		},
-		[setSelected, total, handleCashPayment]
+		[cart.total, setPayment, setChange]
 	)
-	useEffect(() => {
-		if (selected.indexOf(true) > -1) {
-			handleCashPayment(total, data[selected.indexOf(true)])
-		} else {
-			handleCashPayment(total)
-		}
-	}, [selected, total, handleCashPayment])
-	useEffect(() => {
-		setSelected(data.map(() => false))
-	}, [cart])
 	return (
 		<Stack spacing={2} sx={{ width: '100%' }}>
-			<Paper elevation={0} sx={{ padding: '1rem', backgroundColor: colors.grey[50], borderRadius: '1rem' }}>
+			<Paper
+				elevation={0}
+				sx={{
+					padding: '1rem',
+					backgroundColor: colors.grey[50],
+					borderRadius: '1rem',
+				}}
+			>
 				<Stack spacing={2} direction='row'>
 					<Typography
 						variant='h6'
@@ -47,26 +58,49 @@ const CashComponent = ({ cart, total, handleCashPayment }) => {
 					>
 						CASH
 					</Typography>
-					<CurrencyTextFieldComponent selected={selected} cart={cart} handleInputChange={handleInputChange} inputProps={{ min: 0, style: { textAlign: 'center' } }} sx={{ maxWidth: '150px' }} />
+					<CurrencyTextFieldComponent
+						value={value}
+						setValue={setValue}
+						setActiveButton={setActiveButton}
+						handleInputChange={handleInputChange}
+						inputProps={{
+							min: 0,
+							style: { textAlign: 'center' },
+						}}
+						sx={{
+							maxWidth: '150px',
+						}}
+					/>
 				</Stack>
-				<Grid container spacing={1}>
+				<ToggleButtonGroup
+					value={activeButton}
+					exclusive
+					onChange={handleActiveButton}
+					aria-label='cash'
+					sx={{
+						flexWrap: 'wrap',
+						marginLeft: '-4px',
+						marginRight: '-4px',
+					}}
+				>
 					{data.map((item, key) => (
-						<Grid item xs={4} key={key}>
-							<ToggleButton
-								value={item}
-								selected={selected[key]}
-								size='small'
-								onChange={() => {
-									handleButtonChange(key)
-								}}
-								fullWidth
-								disableRipple
-							>
-								{item}
-							</ToggleButton>
-						</Grid>
+						<ToggleButton
+							key={key}
+							value={item}
+							aria-label='cash'
+							sx={{
+								width: 'calc(33.33% - 8px)',
+								margin: '4px !important',
+								'&.MuiToggleButtonGroup-grouped': {
+									borderRadius: '.5rem !important',
+									border: '1px solid rgba(0,0,0,.12) !important',
+								},
+							}}
+						>
+							{item}
+						</ToggleButton>
 					))}
-				</Grid>
+				</ToggleButtonGroup>
 			</Paper>
 		</Stack>
 	)

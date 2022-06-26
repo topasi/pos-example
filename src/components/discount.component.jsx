@@ -4,11 +4,15 @@ import { colors, Card, CardContent, Typography, Box, IconButton } from '@mui/mat
 import CheckCircle from '@mui/icons-material/CheckCircle'
 import CloseIcon from '@mui/icons-material/Close'
 
-const DiscountComponent = ({ cart, discount, selected, handleAddDiscount, handleOpenDeleteDialog }) => {
+import useCart from '../hooks/useCart'
+
+const DiscountComponent = ({ discount, selected, handleOpenDeleteDialog }) => {
+	const { handleCreateDiscount } = useCart()
 	return (
 		<Card
+			elevation={0}
 			onClick={() => {
-				handleAddDiscount && handleAddDiscount(cart, discount)
+				handleCreateDiscount(discount.id)
 			}}
 			sx={{
 				position: 'relative',
@@ -29,6 +33,7 @@ const DiscountComponent = ({ cart, discount, selected, handleAddDiscount, handle
 						alignItems: 'center',
 						justifyContent: 'center',
 						backgroundColor: 'rgba(0,0,0,.15)',
+						cursor: 'pointer',
 					}}
 				>
 					<Box
@@ -59,6 +64,7 @@ const DiscountComponent = ({ cart, discount, selected, handleAddDiscount, handle
 					'& .MuiSvgIcon-root': {
 						color: 'background.default',
 					},
+					cursor: 'pointer',
 				}}
 			>
 				{handleOpenDeleteDialog && (

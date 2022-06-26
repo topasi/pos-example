@@ -1,123 +1,160 @@
-import React, { useState, useEffect } from 'react'
-import { truncate } from 'lodash'
-import { styled, colors, Box, Typography, Grid, List, ListItem, ListItemAvatar, ListItemText, Avatar, Checkbox, Stack, Button, Divider } from '@mui/material'
-import MuiToggleButton from '@mui/material/ToggleButton'
+import React, { useState } from 'react'
+import { truncate, upperFirst } from 'lodash'
+import { styled, colors, Typography, List, ListItem, ListItemAvatar, ListItemText, Avatar, Checkbox, Stack, Button, Divider, FormControlLabel, Chip, Radio, FormGroup, FormControl, InputLabel } from '@mui/material'
 
-import { menu } from '../data'
+import useMenu from '../hooks/useMenu'
+import useCart from '../hooks/useCart'
 import ModalComponent from './modal.component'
 import CurrencyTypographyComponent from './currency-typography.component'
 
-const ToggleButton = styled(MuiToggleButton)(({ value, theme }) => ({
-	'&.Mui-selected': {
-		backgroundColor: `${value === 'small' ? colors.yellow[700] : value === 'upsize' ? colors.red['A400'] : colors.green[500]} !important`,
+const FormControlChip = styled(FormControl)(({ theme }) => ({
+	'& .MuiFormControlLabel-root': {
+		margin: '10px 10px 0 0',
+	},
+	'& .MuiRadio-root': {
+		display: 'none',
+	},
+	'& .MuiChip-root': {
+		cursor: 'pointer',
+	},
+	'& .MuiRadio-root.Mui-checked ~ .MuiTypography-root .MuiChip-root': {
+		backgroundColor: theme.palette.primary.main,
 		color: theme.palette.background.default,
 	},
 }))
 
-const MenuOptionComponent = ({ menuOption, openMenuOption, closeMenuOption, handleCartUpdate }) => {
+const MenuOptionComponent = ({ menu, open, onClose }) => {
+	const { menu: allMenu } = useMenu()
+	const { cart, handleCreateCartItem } = useCart()
 	const [sizes, setSizes] = useState([])
 	const [sideDishes, setSideDishes] = useState([])
-	const [selectedSize, setSelectedSize] = useState([])
-	const [checkedMenuOption, setCheckedMenuOption] = useState([])
-	const handleCheckedMenuOptionChange = (value) => {
-		const currentIndex = checkedMenuOption.indexOf(value)
-		const newChecked = [...checkedMenuOption]
-		if (currentIndex === -1) {
-			newChecked.push(value)
+	const handleToggle = (id) => () => {
+		const sideDish = sideDishes.find((sideDish) => sideDish.id === id)
+		if (sideDish) {
+			const data = sideDishes.filter((dish) => dish.id !== sideDish.id)
+			setSideDishes([...data])
 		} else {
-			newChecked.splice(currentIndex, 1)
+			const data = menu.sideDishes.find((sideDish) => sideDish.id === id)
+			setSideDishes((prev) => [...prev, data])
 		}
-		setCheckedMenuOption(newChecked)
 	}
-	useEffect(() => {
-		if (menuOption?.sizes) {
-			setSizes(menuOption.sizes)
-			setSelectedSize(menuOption.sizes.map(() => false))
-		}
-		if (menuOption?.sideDishes) {
-			setSideDishes(
-				menu.filter((item) => {
-					return menuOption.sideDishes.indexOf(item.id) > -1
-				})
-			)
-		}
-	}, [menuOption])
+	const handleFilter = (sideDish) => {
+		return allMenu.find((item) => {
+			const cartItem = cart.items.find((item) => item.id === sideDish.id)
+			return item.id === sideDish.id && item.stocks - (cartItem?.qty || 0) > 0
+		})
+	}
 	return (
-		<ModalComponent open={openMenuOption} onClose={closeMenuOption}>
-			{sizes.length > 0 && (
-				<Box>
-					<Typography variant='body2' fontWeight='700' marginBottom='.5rem'>
-						AVAILABLE SIZES <span style={{ color: colors.red[500] }}>*</span>
-					</Typography>
-					<Grid container spacing={2}>
-						{sizes.map((size, key) => (
-							<Grid item xs={12 / sizes.length} key={key}>
-								<ToggleButton
-									value={size}
-									selected={selectedSize[key]}
-									onChange={() => {
-										setSelectedSize((prev) => prev.map((item, index) => (index === key ? !item : false)))
-									}}
-									sx={{
-										borderRadius: '.5rem',
-									}}
-									fullWidth
-									disableRipple
-								>
-									{size}
-								</ToggleButton>
-							</Grid>
-						))}
-					</Grid>
-				</Box>
-			)}
-			{sideDishes.length > 0 && (
-				<Box paddingTop='1.5rem'>
-					<Typography variant='body2' fontWeight='700' marginBottom='.5rem'>
-						SIDE DISHES
-					</Typography>
-					<List sx={{ width: '100%', backgroundColor: 'background.default' }} disablePadding>
-						{sideDishes.map((sideDish, key) => (
-							<ListItem
-								dense
-								alignItems='flex-start'
-								secondaryAction={
-									<Stack spacing={1} direction='row' alignItems='center'>
-										<CurrencyTypographyComponent value={sideDish.price} />
-										<Checkbox
-											edge='end'
-											onChange={() => {
-												handleCheckedMenuOptionChange(sideDish.id)
-											}}
-											checked={checkedMenuOption.indexOf(sideDish.id) !== -1}
-											inputProps={{
-												'aria-labelledby': `checkbox-menu-${sideDish.id}`,
-											}}
-											sx={{
-												'& .MuiSvgIcon-root': { fontSize: 28 },
-											}}
-										/>
-									</Stack>
-								}
+		<ModalComponent open={open} onClose={onClose}>
+			<Typography variant='h5' marginBottom='2rem' color={colors.grey[700]}>
+				Add To Cart
+			</Typography>
+			<Stack spacing={2}>
+				<FormGroup>
+					<InputLabel htmlFor='stocks' sx={{ marginBottom: '.25rem' }}>
+						Sizes *
+					</InputLabel>
+					{menu.sizes.length > 0 && (
+						<FormControlChip variant='standard'>
+							<Stack spacing={0} direction='row' flexWrap='wrap'>
+								{menu.sizes.map((menuSize) => (
+									<FormControlLabel
+										key={menuSize}
+										control={
+											<Radio
+												checked={sizes.includes(menuSize)}
+												name='size'
+												value={menuSize}
+												onChange={() => {
+													setSizes([menuSize])
+												}}
+											/>
+										}
+										label={<Chip label={upperFirst(menuSize)} sx={{ color: colors.grey[700] }} />}
+									/>
+								))}
+							</Stack>
+						</FormControlChip>
+					)}
+				</FormGroup>
+			</Stack>
+			{menu.sideDishes.filter(handleFilter).length > 0 && (
+				<>
+					<Divider sx={{ margin: '1.5rem 0' }} />
+					<Stack spacing={2}>
+						<FormGroup>
+							<InputLabel htmlFor='stocks' sx={{ marginBottom: '.5rem' }}>
+								Side Dishes
+							</InputLabel>
+							<List
 								sx={{
-									'& .MuiListItemSecondaryAction-root': {
-										right: '-.5rem',
-									},
+									width: '100%',
+									maxHeight: '300px',
+									overflowX: 'hidden',
+									backgroundColor: 'background.default',
 								}}
-								key={key}
 								disablePadding
 							>
-								<ListItemAvatar>
-									<Avatar alt={sideDish.name} src={sideDish.image} />
-								</ListItemAvatar>
-								<ListItemText primary={truncate(sideDish.name, 30)} secondary={truncate(sideDish.description, 30)} />
-							</ListItem>
-						))}
-					</List>
-				</Box>
+								{menu.sideDishes.filter(handleFilter).map((sideDish) => (
+									<ListItem
+										key={sideDish.id}
+										dense
+										alignItems='flex-start'
+										secondaryAction={
+											<Stack spacing={1} direction='row' alignItems='center'>
+												<CurrencyTypographyComponent value={sideDish.price} />
+												<Checkbox
+													edge='end'
+													checked={sideDishes.find((dish) => dish.id === sideDish.id) ? true : false}
+													onChange={handleToggle(sideDish.id)}
+													inputProps={{
+														'aria-labelledby': `checkbox-menu-${sideDish.id}`,
+													}}
+													sx={{
+														'& .MuiSvgIcon-root': { fontSize: 28 },
+													}}
+												/>
+											</Stack>
+										}
+										sx={{
+											'& .MuiListItemSecondaryAction-root': {
+												right: '-.5rem',
+											},
+										}}
+										disablePadding
+									>
+										<ListItemAvatar>
+											<Avatar alt={sideDish.name} src={sideDish.image} />
+										</ListItemAvatar>
+										<ListItemText id={`checkbox-list-secondary-label-${sideDish.id}`} primary={`${truncate(sideDish.name, 30)} ${sideDish.stocks}`} secondary={truncate(sideDish.description, 30)} />
+									</ListItem>
+								))}
+							</List>
+						</FormGroup>
+					</Stack>
+				</>
 			)}
-			<Divider sx={{ paddingTop: '1.5rem' }} />
-			<Stack spacing={2} direction='row' paddingTop='1.5rem'>
+			<Stack spacing={1} marginTop={4}>
+				<Button
+					variant='contained'
+					color='primary'
+					size='large'
+					fullWidth
+					disableRipple
+					disableElevation
+					disabled={sizes.length === 0}
+					sx={{
+						minHeight: '50px',
+						borderRadius: '.5rem',
+						color: 'background.default',
+					}}
+					onClick={() => {
+						handleCreateCartItem(menu, sizes, sideDishes)
+						onClose()
+					}}
+				>
+					Apply
+				</Button>
 				<Button
 					variant='outlined'
 					color='primary'
@@ -129,26 +166,9 @@ const MenuOptionComponent = ({ menuOption, openMenuOption, closeMenuOption, hand
 						minHeight: '50px',
 						borderRadius: '.5rem',
 					}}
-					onClick={closeMenuOption}
+					onClick={onClose}
 				>
 					Cancel
-				</Button>
-				<Button
-					variant='contained'
-					color='primary'
-					size='large'
-					fullWidth
-					disabled={!selectedSize.find((item) => item === true)}
-					disableRipple
-					disableElevation
-					sx={{
-						minHeight: '50px',
-						borderRadius: '.5rem',
-						color: 'background.default',
-					}}
-					onClick={() => handleCartUpdate(menuOption, selectedSize.indexOf(true), checkedMenuOption)}
-				>
-					Apply
 				</Button>
 			</Stack>
 		</ModalComponent>

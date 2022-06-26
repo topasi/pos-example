@@ -1,20 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { TextField } from '@mui/material'
 
 import useSettings from '../hooks/useSettings'
 import NumberFormatComponent from './number-format.component'
 
-const CurrencyTextFieldComponent = ({ selected, cart, handleInputChange, ...others }) => {
-	const [value, setValue] = useState('')
+const CurrencyTextFieldComponent = ({ value, setValue, setActiveButton, handleInputChange, ...others }) => {
 	const { settings } = useSettings()
-	useEffect(() => {
-		if (value !== '' && selected.find((item) => item === true)) {
-			setValue('')
-		}
-	}, [selected, value, setValue])
-	useEffect(() => {
-		setValue('')
-	}, [cart])
 	return (
 		<TextField
 			variant='standard'
@@ -23,6 +14,7 @@ const CurrencyTextFieldComponent = ({ selected, cart, handleInputChange, ...othe
 			placeholder='Enter Amount'
 			onChange={(e) => {
 				setValue(e.target.value)
+				setActiveButton(e.target.value)
 				handleInputChange(e.target.value)
 			}}
 			name='numberformat'

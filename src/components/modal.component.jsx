@@ -16,6 +16,7 @@ const ModalComponent = ({ open, onClose, children, width }) => {
 					display: 'flex',
 					justifyContent: 'center',
 					transform: 'translate(-50%, -50%)',
+					outline: 'none',
 				}}
 			>
 				<Box

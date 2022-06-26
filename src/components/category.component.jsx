@@ -5,6 +5,7 @@ import CloseIcon from '@mui/icons-material/Close'
 const CategoryComponent = ({ category, handleOpenDeleteDialog }) => {
 	return (
 		<Card
+			elevation={0}
 			sx={{
 				height: '235px',
 				borderRadius: '1rem',
@@ -23,6 +24,7 @@ const CategoryComponent = ({ category, handleOpenDeleteDialog }) => {
 					'& .MuiSvgIcon-root': {
 						color: 'background.default',
 					},
+					cursor: 'pointer,',
 				}}
 			>
 				<IconButton
