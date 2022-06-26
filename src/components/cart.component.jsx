@@ -120,7 +120,14 @@ const CartComponent = () => {
 											<SwipeableList>
 												<SwipeableListItem trailingActions={trailingActions(cart, item)}>
 													<Stack spacing={2} direction='row' sx={{ width: '100%' }}>
-														<ListItemText primary={truncate(item.name, 30)} secondary={truncate(item.categories, 100)} sx={{ margin: 0 }} />
+														<ListItemText
+															primary={truncate(item.name, 30)}
+															secondary={truncate(
+																item.categories.map((category) => category.name),
+																100
+															)}
+															sx={{ margin: 0 }}
+														/>
 														<QtyComponent item={item} index={key} />
 														<CurrencyTypographyComponent value={item.price * item.qty} sx={{ width: '65px', textAlign: 'right' }} />
 													</Stack>
