@@ -92,10 +92,10 @@ const TransactionPage = () => {
 							</TabPanel>
 							{categories.map((category, key) => (
 								<TabPanel value={tabValue} index={key + 2} key={category.id}>
-									{menu.filter((item) => item.categories.indexOf(category.id) > -1).length > 0 ? (
+									{menu.filter((item) => item.categories.map((category) => category.id).indexOf(category.id) > -1).length > 0 ? (
 										<Grid container spacing={3}>
 											{menu
-												.filter((item) => item.categories.indexOf(category.id) > -1)
+												.filter((item) => item.categories.map((category) => category.id).indexOf(category.id) > -1)
 												.map((item) => (
 													<Grid item xs={12} sm={6} md={4} xl={3} key={item.id}>
 														<MenuItemComponent item={item} selected={cart.items.find((cartItem) => cartItem.id === item.id)} />

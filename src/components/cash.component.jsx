@@ -68,7 +68,7 @@ const CashComponent = () => {
 							style: { textAlign: 'center' },
 						}}
 						sx={{
-							maxWidth: '150px',
+							maxWidth: '50%',
 						}}
 					/>
 				</Stack>
@@ -78,9 +78,8 @@ const CashComponent = () => {
 					onChange={handleActiveButton}
 					aria-label='cash'
 					sx={{
+						width: '100%',
 						flexWrap: 'wrap',
-						marginLeft: '-4px',
-						marginRight: '-4px',
 					}}
 				>
 					{data.map((item, key) => (

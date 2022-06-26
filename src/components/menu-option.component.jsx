@@ -78,7 +78,7 @@ const MenuOptionComponent = ({ menu, open, onClose }) => {
 					)}
 				</FormGroup>
 			</Stack>
-			{menu.sideDishes.filter(handleFilter).length > 0 && (
+			{menu.sideDishes?.filter(handleFilter).length > 0 && (
 				<>
 					<Divider sx={{ margin: '1.5rem 0' }} />
 					<Stack spacing={2}>
@@ -95,7 +95,7 @@ const MenuOptionComponent = ({ menu, open, onClose }) => {
 								}}
 								disablePadding
 							>
-								{menu.sideDishes.filter(handleFilter).map((sideDish) => (
+								{menu.sideDishes?.filter(handleFilter).map((sideDish) => (
 									<ListItem
 										key={sideDish.id}
 										dense
