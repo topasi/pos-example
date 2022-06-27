@@ -171,7 +171,18 @@ export const CartProvider = ({ children }) => {
 			get(ref(db, `/cart/${cartId}/items/${id}`))
 				.then((snapshot) => {
 					if (snapshot.exists()) {
-						remove(ref(db, `cart/${cartId}/items/${id}`)).catch(handleError)
+						remove(ref(db, `cart/${cartId}/items/${id}`))
+							.then(() => {
+								get(ref(db, `/cart/${cartId}/items`))
+									.then((snapshot) => {
+										if (!snapshot.exists()) {
+											setChange(0)
+											setPayment(0)
+										}
+									})
+									.catch(handleError)
+							})
+							.catch(handleError)
 					} else {
 						handleInvalidItem()
 					}
