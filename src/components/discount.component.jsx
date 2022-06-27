@@ -1,18 +1,21 @@
 import React from 'react'
+import { useLocation } from 'react-router-dom'
 import { truncate } from 'lodash'
 import { colors, Card, CardContent, Typography, Box, IconButton } from '@mui/material'
 import CheckCircle from '@mui/icons-material/CheckCircle'
 import CloseIcon from '@mui/icons-material/Close'
 
+import { router } from '../router'
 import useCart from '../hooks/useCart'
 
 const DiscountComponent = ({ discount, selected, handleOpenDeleteDialog }) => {
+	const location = useLocation()
 	const { handleCreateDiscount } = useCart()
 	return (
 		<Card
 			elevation={0}
 			onClick={() => {
-				handleCreateDiscount(discount.id)
+				location.pathname === router.transaction.path && handleCreateDiscount(discount.id)
 			}}
 			sx={{
 				position: 'relative',

@@ -244,7 +244,7 @@ const CartComponent = () => {
 											borderRadius: '.35rem',
 										}}
 									>
-										Cancel
+										Reset
 									</Button>
 									<Button
 										variant='contained'
