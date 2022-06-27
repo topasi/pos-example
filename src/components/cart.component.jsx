@@ -123,7 +123,7 @@ const CartComponent = () => {
 														<ListItemText
 															primary={truncate(item.name, 30)}
 															secondary={truncate(
-																item.categories.map((category) => category.name),
+																item.categories?.map((category) => category.name),
 																100
 															)}
 															sx={{ margin: 0 }}
@@ -216,7 +216,7 @@ const CartComponent = () => {
 						</Collapse>
 						<ListItem>
 							<Paper elevation={0} sx={{ width: '100%', backgroundColor: colors.teal[100], borderRadius: '.5rem' }}>
-								<Stack spacing={2} direction='row' sx={{ padding: '.5rem 1rem' }}>
+								<Stack spacing={2} direction='row' alignItems='center' minHeight='50px' sx={{ padding: '.5rem 1rem' }}>
 									<Typography variant='body1' fontWeight='700' flexGrow={1} color={colors.teal[500]}>
 										CHANGE
 									</Typography>
@@ -233,7 +233,7 @@ const CartComponent = () => {
 										fullWidth
 										disableElevation
 										sx={{
-											minHeight: '50px',
+											minHeight: '75px',
 											borderRadius: '.35rem',
 										}}
 									>
@@ -249,7 +249,7 @@ const CartComponent = () => {
 											handleCreateOrder(setDisabled)
 										}}
 										sx={{
-											minHeight: '50px',
+											minHeight: '75px',
 											borderRadius: '.35rem',
 											color: 'background.default',
 										}}

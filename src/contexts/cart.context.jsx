@@ -5,6 +5,7 @@ import { ref, set, get, update, remove, query, orderByChild } from 'firebase/dat
 
 import { db } from '../firebase'
 import { router } from '../router'
+import useLocalStorage from '../hooks/useLocalStorage'
 import useSettings from '../hooks/useSettings'
 import SnackbarComponent from '../components/snackbar.component'
 
@@ -27,6 +28,9 @@ export const CartProvider = ({ children }) => {
 		}),
 		[]
 	)
+	const [cartId] = useLocalStorage('cartId', () => {
+		return uuidv4()
+	})
 	const [snackbar, setSnackbar] = useState({
 		open: false,
 		severity: 'info',
@@ -78,42 +82,45 @@ export const CartProvider = ({ children }) => {
 			const newSizes = sizes.length > 0 ? sizes[0] : menu.sizes[0]
 			const newCartItems = sideDishes.concat(menu)
 			newCartItems.forEach((newCartItem) => {
-				get(ref(db, `/cart/items/${newCartItem.id}`))
+				get(ref(db, `/cart/${cartId}/items/${newCartItem.id}`))
 					.then((snapshot) => {
 						if (snapshot.exists()) {
 							const value = snapshot.val()
 							const qty = value.qty + 1
 							handleCheckMenuStocks(menu.id, qty, (data) => {
 								if (value.size === newSizes) {
-									update(ref(db, `/cart/items/${data.id}`), {
+									update(ref(db, `/cart/${cartId}/items/${data.id}`), {
 										id: data.id,
 										name: data.name,
 										price: data.price,
 										qty: qty,
 										stocks: data.stocks,
 										size: value.size,
+										categories: newCartItem.categories,
 									}).catch(handleError)
 								} else {
-									update(ref(db, `/cart/items/${data.id}`), {
+									update(ref(db, `/cart/${cartId}/items/${data.id}`), {
 										id: data.id,
 										name: data.name,
 										price: data.price,
 										qty: value.qty,
 										stocks: data.stocks,
 										size: newSizes,
+										categories: newCartItem.categories,
 									}).catch(handleError)
 								}
 							})
 						} else {
 							const qty = 1
 							handleCheckMenuStocks(newCartItem.id, qty, (data) => {
-								set(ref(db, `/cart/items/${newCartItem.id}`), {
+								set(ref(db, `/cart/${cartId}/items/${newCartItem.id}`), {
 									id: data.id,
 									name: data.name,
 									price: data.price,
 									qty: qty,
 									stocks: data.stocks,
 									size: newSizes,
+									categories: newCartItem.categories,
 								}).catch(handleError)
 							})
 						}
@@ -121,17 +128,17 @@ export const CartProvider = ({ children }) => {
 					.catch(handleError)
 			}, [])
 		},
-		[handleCheckMenuStocks]
+		[handleCheckMenuStocks, cartId]
 	)
 	const handleIncreaseCartItemQty = useCallback(
 		(id) => {
-			get(ref(db, `/cart/items/${id}`))
+			get(ref(db, `/cart/${cartId}/items/${id}`))
 				.then((snapshot) => {
 					if (snapshot.exists()) {
 						const value = snapshot.val()
 						const qty = value.qty + 1
 						handleCheckMenuStocks(value.id, qty, (data) => {
-							update(ref(db, `cart/items/${id}`), { qty, stocks: data.stocks }).catch(handleError)
+							update(ref(db, `cart/${cartId}/items/${id}`), { qty, stocks: data.stocks }).catch(handleError)
 						})
 					} else {
 						handleInvalidItem()
@@ -139,17 +146,17 @@ export const CartProvider = ({ children }) => {
 				})
 				.catch(handleError)
 		},
-		[handleCheckMenuStocks]
+		[handleCheckMenuStocks, cartId]
 	)
 	const handleDecreaseCartItemQty = useCallback(
 		(id) => {
-			get(ref(db, `/cart/items/${id}`))
+			get(ref(db, `/cart/${cartId}/items/${id}`))
 				.then((snapshot) => {
 					if (snapshot.exists()) {
 						const value = snapshot.val()
 						const qty = Math.max(value.qty - 1, 1)
 						handleCheckMenuStocks(value.id, qty, (data) => {
-							update(ref(db, `cart/items/${id}`), { qty, stocks: data.stocks }).catch(handleError)
+							update(ref(db, `cart/${cartId}/items/${id}`), { qty, stocks: data.stocks }).catch(handleError)
 						})
 					} else {
 						handleInvalidItem()
@@ -157,60 +164,66 @@ export const CartProvider = ({ children }) => {
 				})
 				.catch(handleError)
 		},
-		[handleCheckMenuStocks]
+		[handleCheckMenuStocks, cartId]
 	)
-	const handleDeleteCartItem = useCallback((id) => {
-		get(ref(db, `/cart/items/${id}`))
-			.then((snapshot) => {
-				if (snapshot.exists()) {
-					remove(ref(db, `cart/items/${id}`)).catch(handleError)
-				} else {
-					handleInvalidItem()
-				}
-			})
-			.catch(handleError)
-	}, [])
+	const handleDeleteCartItem = useCallback(
+		(id) => {
+			get(ref(db, `/cart/${cartId}/items/${id}`))
+				.then((snapshot) => {
+					if (snapshot.exists()) {
+						remove(ref(db, `cart/${cartId}/items/${id}`)).catch(handleError)
+					} else {
+						handleInvalidItem()
+					}
+				})
+				.catch(handleError)
+		},
+		[cartId]
+	)
 	const handleResetCart = useCallback(() => {
-		remove(ref(db, `/cart`))
+		remove(ref(db, `/cart/${cartId}`))
 			.then(() => {
 				setCart(initialValues)
 				setChange(0)
 				setPayment(0)
 			})
 			.catch(handleError)
-	}, [initialValues])
-	const handleCreateDiscount = useCallback((id) => {
-		get(ref(db, `/cart/discounts/${id}`))
-			.then((snapshot) => {
-				if (snapshot.exists()) {
-					remove(ref(db, `/cart/discounts/${id}`)).catch(handleError)
-				} else {
-					get(ref(db, `/cart/items`))
-						.then((snapshot) => {
-							if (snapshot.exists()) {
-								get(ref(db, `${router.discounts.path}/${id}`))
-									.then((snapshot) => {
-										if (snapshot.exists()) {
-											const value = snapshot.val()
-											set(ref(db, `/cart/discounts/${id}`), value).catch(handleError)
-										} else {
-											handleInvalidItem()
-										}
+	}, [initialValues, cartId])
+	const handleCreateDiscount = useCallback(
+		(id) => {
+			get(ref(db, `/cart/${cartId}/discounts/${id}`))
+				.then((snapshot) => {
+					if (snapshot.exists()) {
+						remove(ref(db, `/cart/${cartId}/discounts/${id}`)).catch(handleError)
+					} else {
+						get(ref(db, `/cart/${cartId}/items`))
+							.then((snapshot) => {
+								if (snapshot.exists()) {
+									get(ref(db, `${router.discounts.path}/${id}`))
+										.then((snapshot) => {
+											if (snapshot.exists()) {
+												const value = snapshot.val()
+												set(ref(db, `/cart/${cartId}/discounts/${id}`), value).catch(handleError)
+											} else {
+												handleInvalidItem()
+											}
+										})
+										.catch(handleError)
+								} else {
+									setSnackbar({
+										open: true,
+										severity: 'warning',
+										message: 'Cart is empty',
 									})
-									.catch(handleError)
-							} else {
-								setSnackbar({
-									open: true,
-									severity: 'warning',
-									message: 'Cart is empty',
-								})
-							}
-						})
-						.catch(handleError)
-				}
-			})
-			.catch(handleError)
-	}, [])
+								}
+							})
+							.catch(handleError)
+					}
+				})
+				.catch(handleError)
+		},
+		[cartId]
+	)
 	const handleCreateOrder = useCallback(
 		(setDisabled) => {
 			if (cart.items.length === 0) {
@@ -255,7 +268,7 @@ export const CartProvider = ({ children }) => {
 		[cart, handleResetCart, change, payment]
 	)
 	useEffect(() => {
-		get(query(ref(db, '/cart'), orderByChild('createdAt')))
+		get(query(ref(db, `/cart/${cartId}`), orderByChild('createdAt')))
 			.then((snapshot) => {
 				let newCartItems = []
 				let newCartDiscounts = []
@@ -288,7 +301,7 @@ export const CartProvider = ({ children }) => {
 				})
 			})
 			.catch(handleError)
-	}, [cart, cart.items, settings.vat, settings.serviceCharge])
+	}, [cart, cartId, cart.items, settings.vat, settings.serviceCharge])
 	return (
 		<CartContext.Provider value={{ cart, handleCreateCartItem, handleIncreaseCartItemQty, handleDecreaseCartItemQty, handleDeleteCartItem, handleCreateDiscount, handleCreateOrder, payment, setPayment, change, setChange }}>
 			<SnackbarComponent open={snackbar.open} onClose={handleSnackbar} severity={snackbar.severity}>
