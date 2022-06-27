@@ -1,12 +1,34 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { truncate } from 'lodash'
-import { Card, CardMedia, CardContent, Stack, Typography, Box } from '@mui/material'
+import { colors, Card, CardMedia, CardContent, Stack, Typography, Box } from '@mui/material'
 import CheckCircle from '@mui/icons-material/CheckCircle'
 
 import useCart from '../hooks/useCart'
 import CurrencyTypographyComponent from './currency-typography.component'
 import MenuOptionComponent from './menu-option.component'
-import placeholder from '../assets/placeholder.jpg'
+import phWide from '../assets/ph-wide.jpg'
+import phBroken from '../assets/ph-broken.jpg'
+
+const CardImage = ({ src, alt, ...props }) => {
+	const [imgSrc, setSrc] = useState(phWide || src)
+	const onLoad = useCallback(() => {
+		setSrc(src)
+	}, [src])
+	const onError = useCallback(() => {
+		setSrc(phBroken)
+	}, [])
+	useEffect(() => {
+		const img = new Image()
+		img.src = src
+		img.addEventListener('load', onLoad)
+		img.addEventListener('error', onError)
+		return () => {
+			img.removeEventListener('load', onLoad)
+			img.removeEventListener('error', onError)
+		}
+	}, [src, onLoad, onError])
+	return <CardMedia component='img' height='150' image={imgSrc} alt={alt} {...props} />
+}
 
 const MenuItemComponent = ({ item, selected }) => {
 	const { cart, handleCreateCartItem } = useCart()
@@ -29,7 +51,7 @@ const MenuItemComponent = ({ item, selected }) => {
 					height: '235px',
 					borderRadius: '1rem',
 					cursor: 'pointer',
-					backgroundColor: 'primary.main',
+					backgroundColor: colors.grey[50],
 				}}
 			>
 				{selected && (
@@ -83,8 +105,8 @@ const MenuItemComponent = ({ item, selected }) => {
 						</Box>
 					</Box>
 				)}
-				<CardMedia component='img' height='150' image={item.image || placeholder} alt={item.name} />
-				<CardContent>
+				<CardImage src={item.image} alt={item.name} height='150' />
+				<CardContent sx={{ backgroundColor: 'primary.main' }}>
 					<Stack spacing={2} direction='row'>
 						<Typography gutterBottom variant='body1' component='div' flexGrow={1} height='50px' sx={{ color: 'background.default' }}>
 							{truncate(item.name, { length: 40 })}

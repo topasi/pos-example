@@ -2,9 +2,8 @@ import React, { useState } from 'react'
 import * as yup from 'yup'
 import { useFormik } from 'formik'
 import { upperFirst, truncate } from 'lodash'
-import { styled, colors, Stack, Grid, Box, InputLabel, Button, Typography, Avatar, Chip, Checkbox, List, ListItem, ListItemButton, ListItemAvatar, ListItemText, FormGroup, FormControl, FormHelperText, OutlinedInput, FormControlLabel } from '@mui/material'
+import { styled, colors, Stack, Grid, Box, InputLabel, Button, Typography, Chip, Checkbox, List, ListItem, ListItemButton, ListItemAvatar, ListItemText, FormGroup, FormControl, FormHelperText, OutlinedInput, FormControlLabel } from '@mui/material'
 
-import placeholder from '../assets/placeholder.jpg'
 import useSettings from '../hooks/useSettings'
 import useCategories from '../hooks/useCategories'
 import useMenu from '../hooks/useMenu'
@@ -12,6 +11,7 @@ import ModalComponent from '../components/modal.component'
 import AlertComponent from '../components/alert.component'
 import NumberFormatComponent from './number-format.component'
 import DropzoneComponent from './dropzone.component'
+import PhotoComponent from './photo.component'
 
 const FormControlChip = styled(FormControl)(({ theme }) => ({
 	'& .MuiFormControlLabel-root': {
@@ -178,7 +178,7 @@ const MenuCreateComponent = ({ sideDishes, menu, open, handleCloseMenuModal, han
 															}}
 														>
 															<ListItemAvatar>
-																<Avatar alt={sideDish.name} src={sideDish.image || placeholder} />
+																<PhotoComponent alt={sideDish.name} src={sideDish.image} />
 															</ListItemAvatar>
 															<ListItemText id={`checkbox-list-secondary-label-${sideDish.id}`} primary={truncate(sideDish.name, 30)} />
 														</ListItemButton>

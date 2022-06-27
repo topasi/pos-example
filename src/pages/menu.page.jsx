@@ -1,18 +1,18 @@
 import React, { useCallback, useState } from 'react'
 import moment from 'moment'
 import { truncate, upperFirst } from 'lodash'
-import { styled, colors, Stack, Grid, Box, Paper, ButtonGroup, Button, Typography, Table, TableBody, TableContainer, TableHead, Avatar, Chip } from '@mui/material'
+import { styled, colors, Stack, Grid, Box, Paper, ButtonGroup, Button, Typography, Table, TableBody, TableContainer, TableHead, Chip } from '@mui/material'
 import MuiTableCell, { tableCellClasses } from '@mui/material/TableCell'
 import MuiTableRow from '@mui/material/TableRow'
 import AddIcon from '@mui/icons-material/Add'
 import ImageIcon from '@mui/icons-material/Image'
 
 import useMenu from '../hooks/useMenu'
-import placeholder from '../assets/placeholder.jpg'
 import LayoutComponent from '../components/layout.component'
 import CurrencyTypographyComponent from '../components/currency-typography.component'
 import MenuCreateComponent from '../components/menu-create.component'
 import DialogComponent from '../components/dialog.component'
+import PhotoComponent from '../components/photo.component'
 
 const TableCell = styled(MuiTableCell)(({ theme }) => ({
 	'&:first-of-type': {
@@ -146,7 +146,7 @@ const MenuPage = () => {
 									</TableHead>
 									<TableBody>
 										{menu.length > 0 ? (
-											menu.map((item, key) => (
+											menu.map((item) => (
 												<MuiTableRow
 													key={item.id}
 													sx={{
@@ -154,7 +154,7 @@ const MenuPage = () => {
 													}}
 												>
 													<TableCell>
-														<Avatar alt={item.name} src={item.image || placeholder} />
+														<PhotoComponent alt={item.name} src={item.image} />
 													</TableCell>
 													<TableCell>{item.id}</TableCell>
 													<TableCell>{item.name}</TableCell>
