@@ -191,15 +191,19 @@ export const CartProvider = ({ children }) => {
 		},
 		[cartId]
 	)
-	const handleResetCart = useCallback(() => {
-		remove(ref(db, `/cart/${cartId}`))
-			.then(() => {
-				setCart(initialValues)
-				setChange(0)
-				setPayment(0)
-			})
-			.catch(handleError)
-	}, [initialValues, cartId])
+	const handleResetCart = useCallback(
+		(config) => {
+			remove(ref(db, `/cart/${cartId}`))
+				.then(() => {
+					setCart(initialValues)
+					setChange(0)
+					setPayment(0)
+					setSnackbar(config)
+				})
+				.catch(handleError)
+		},
+		[initialValues, cartId]
+	)
 	const handleCreateDiscount = useCallback(
 		(id) => {
 			get(ref(db, `/cart/${cartId}/discounts/${id}`))
@@ -265,9 +269,8 @@ export const CartProvider = ({ children }) => {
 					updatedAt,
 				})
 					.then(() => {
-						handleResetCart()
 						setDisabled(false)
-						setSnackbar({
+						handleResetCart({
 							open: true,
 							severity: 'success',
 							message: 'Successfully created an order',
@@ -314,7 +317,7 @@ export const CartProvider = ({ children }) => {
 			.catch(handleError)
 	}, [cart, cartId, cart.items, settings.vat, settings.serviceCharge])
 	return (
-		<CartContext.Provider value={{ cart, handleCreateCartItem, handleIncreaseCartItemQty, handleDecreaseCartItemQty, handleDeleteCartItem, handleCreateDiscount, handleCreateOrder, payment, setPayment, change, setChange }}>
+		<CartContext.Provider value={{ cart, handleCreateCartItem, handleIncreaseCartItemQty, handleDecreaseCartItemQty, handleDeleteCartItem, handleResetCart, handleCreateDiscount, handleCreateOrder, payment, setPayment, change, setChange }}>
 			<SnackbarComponent open={snackbar.open} onClose={handleSnackbar} severity={snackbar.severity}>
 				{snackbar.message}
 			</SnackbarComponent>

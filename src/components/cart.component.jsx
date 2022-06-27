@@ -15,7 +15,7 @@ import CashComponent from './cash.component'
 import AlertComponent from './alert.component'
 
 const CartComponent = () => {
-	const { cart, handleCreateOrder, handleDeleteCartItem, change } = useCart()
+	const { cart, handleCreateOrder, handleDeleteCartItem, handleResetCart, change } = useCart()
 	const [disabled, setDisabled] = useState(false)
 	const [openOrder, setOpenOrder] = useState(true)
 	const [openCash, setOpenCash] = useState(true)
@@ -232,6 +232,13 @@ const CartComponent = () => {
 										size='large'
 										fullWidth
 										disableElevation
+										onClick={() => {
+											handleResetCart({
+												open: true,
+												severity: 'warning',
+												message: 'Cart is reset',
+											})
+										}}
 										sx={{
 											minHeight: '75px',
 											borderRadius: '.35rem',

@@ -78,61 +78,59 @@ const MenuOptionComponent = ({ menu, open, onClose }) => {
 					)}
 				</FormGroup>
 			</Stack>
+			<Divider sx={{ margin: '1.5rem 0' }} />
 			{menu.sideDishes?.filter(handleFilter).length > 0 && (
-				<>
-					<Divider sx={{ margin: '1.5rem 0' }} />
-					<Stack spacing={2}>
-						<FormGroup>
-							<InputLabel htmlFor='stocks' sx={{ marginBottom: '.5rem' }}>
-								Side Dishes
-							</InputLabel>
-							<List
-								sx={{
-									width: '100%',
-									maxHeight: '300px',
-									overflowX: 'hidden',
-									backgroundColor: 'background.default',
-								}}
-								disablePadding
-							>
-								{menu.sideDishes?.filter(handleFilter).map((sideDish) => (
-									<ListItem
-										key={sideDish.id}
-										dense
-										alignItems='flex-start'
-										secondaryAction={
-											<Stack spacing={1} direction='row' alignItems='center'>
-												<CurrencyTypographyComponent value={sideDish.price} />
-												<Checkbox
-													edge='end'
-													checked={sideDishes.find((dish) => dish.id === sideDish.id) ? true : false}
-													onChange={handleToggle(sideDish.id)}
-													inputProps={{
-														'aria-labelledby': `checkbox-menu-${sideDish.id}`,
-													}}
-													sx={{
-														'& .MuiSvgIcon-root': { fontSize: 28 },
-													}}
-												/>
-											</Stack>
-										}
-										sx={{
-											'& .MuiListItemSecondaryAction-root': {
-												right: '-.5rem',
-											},
-										}}
-										disablePadding
-									>
-										<ListItemAvatar>
-											<Avatar alt={sideDish.name} src={sideDish.image} />
-										</ListItemAvatar>
-										<ListItemText id={`checkbox-list-secondary-label-${sideDish.id}`} primary={`${truncate(sideDish.name, 30)} ${sideDish.stocks}`} secondary={truncate(sideDish.description, 30)} />
-									</ListItem>
-								))}
-							</List>
-						</FormGroup>
-					</Stack>
-				</>
+				<Stack spacing={2}>
+					<FormGroup>
+						<InputLabel htmlFor='stocks' sx={{ marginBottom: '.5rem' }}>
+							Side Dishes
+						</InputLabel>
+						<List
+							sx={{
+								width: '100%',
+								maxHeight: '300px',
+								overflowX: 'hidden',
+								backgroundColor: 'background.default',
+							}}
+							disablePadding
+						>
+							{menu.sideDishes?.filter(handleFilter).map((sideDish) => (
+								<ListItem
+									key={sideDish.id}
+									dense
+									alignItems='flex-start'
+									secondaryAction={
+										<Stack spacing={1} direction='row' alignItems='center'>
+											<CurrencyTypographyComponent value={sideDish.price} />
+											<Checkbox
+												edge='end'
+												checked={sideDishes.find((dish) => dish.id === sideDish.id) ? true : false}
+												onChange={handleToggle(sideDish.id)}
+												inputProps={{
+													'aria-labelledby': `checkbox-menu-${sideDish.id}`,
+												}}
+												sx={{
+													'& .MuiSvgIcon-root': { fontSize: 28 },
+												}}
+											/>
+										</Stack>
+									}
+									sx={{
+										'& .MuiListItemSecondaryAction-root': {
+											right: '-.5rem',
+										},
+									}}
+									disablePadding
+								>
+									<ListItemAvatar>
+										<Avatar alt={sideDish.name} src={sideDish.image} />
+									</ListItemAvatar>
+									<ListItemText id={`checkbox-list-secondary-label-${sideDish.id}`} primary={`${truncate(sideDish.name, 30)} ${sideDish.stocks}`} secondary={truncate(sideDish.description, 30)} />
+								</ListItem>
+							))}
+						</List>
+					</FormGroup>
+				</Stack>
 			)}
 			<Stack spacing={1} marginTop={4}>
 				<Button

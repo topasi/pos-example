@@ -54,7 +54,7 @@ const Row = ({ order, handleOpenDeleteDialog }) => {
 				</TableCell>
 				<TableCell>{order.id}</TableCell>
 				<TableCell>{moment(order.createdAt, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD HH:mm')}</TableCell>
-				<TableCell>Cash</TableCell>
+				<TableCell>{order.paymentMethod}</TableCell>
 				<TableCell align='right'>
 					<CurrencyTypographyComponent value={order.vatPrice} />({order.vat}%)
 				</TableCell>
