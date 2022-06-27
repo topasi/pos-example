@@ -83,7 +83,19 @@ const DiscountsPage = () => {
 									</FormGroup>
 									<FormGroup>
 										<FormControl required variant='standard' fullWidth>
-											<FormControlLabel control={<Checkbox checked={formik.values.isTaxExempted} name='isTaxExempted' />} onChange={formik.handleChange} label='Tax Exempted' />
+											<FormControlLabel
+												sx={{
+													'& .MuiCheckbox-root': {
+														color: colors.grey[500],
+														'&.Mui-checked': {
+															color: 'primary.main',
+														},
+													},
+												}}
+												control={<Checkbox checked={formik.values.isTaxExempted} name='isTaxExempted' />}
+												onChange={formik.handleChange}
+												label='VAT Exclusive'
+											/>
 										</FormControl>
 									</FormGroup>
 									<FormGroup>

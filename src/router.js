@@ -7,6 +7,16 @@ import MenuBookIcon from '@mui/icons-material/MenuBook'
 import SettingsIcon from '@mui/icons-material/Settings'
 
 const router = {
+	login: {
+		name: 'Login',
+		icon: <DashboardIcon />,
+		path: '/',
+	},
+	register: {
+		name: 'Register',
+		icon: <DashboardIcon />,
+		path: '/register',
+	},
 	dashboard: {
 		name: 'Dashboard',
 		icon: <DashboardIcon />,
@@ -41,6 +51,9 @@ const router = {
 		name: 'Settings',
 		icon: <SettingsIcon />,
 		path: '/settings',
+	},
+	unauthorized: {
+		path: '/unauthorized',
 	},
 	error: {
 		path: '*',

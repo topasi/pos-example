@@ -196,14 +196,18 @@ const MenuCreateComponent = ({ sideDishes, menu, open, handleCloseMenuModal, han
 								<InputLabel htmlFor='stocks' sx={{ marginBottom: '.25rem' }}>
 									Categories *
 								</InputLabel>
-								<FormControlChip required error={formik.touched.categories && Boolean(formik.errors.categories)} variant='standard'>
-									<Stack spacing={0} direction='row' flexWrap='wrap' minHeight='calc(56px - 5px)'>
-										{categories.map((category) => (
-											<FormControlLabel key={category.id} control={<Checkbox checked={formik.values.categories.includes(category.id)} name='categories' value={category.id} onChange={formik.handleChange} />} label={<Chip label={category.name} sx={{ color: colors.grey[700] }} />} />
-										))}
-									</Stack>
-									<FormHelperText sx={{ marginTop: '.5rem' }}>{formik.touched.categories && formik.errors.categories}</FormHelperText>
-								</FormControlChip>
+								{categories.length > 0 ? (
+									<FormControlChip required error={formik.touched.categories && Boolean(formik.errors.categories)} variant='standard'>
+										<Stack spacing={0} direction='row' flexWrap='wrap' minHeight='calc(56px - 5px)'>
+											{categories.map((category) => (
+												<FormControlLabel key={category.id} control={<Checkbox checked={formik.values.categories.includes(category.id)} name='categories' value={category.id} onChange={formik.handleChange} />} label={<Chip label={category.name} sx={{ color: colors.grey[700] }} />} />
+											))}
+										</Stack>
+										<FormHelperText sx={{ marginTop: '.5rem' }}>{formik.touched.categories && formik.errors.categories}</FormHelperText>
+									</FormControlChip>
+								) : (
+									<AlertComponent severity='info'>There's no categories available.</AlertComponent>
+								)}
 							</FormGroup>
 							<FormGroup>
 								<InputLabel htmlFor='stocks' sx={{ marginBottom: '.25rem' }}>

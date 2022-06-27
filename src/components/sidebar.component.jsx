@@ -44,7 +44,7 @@ const SidebarComponent = ({ drawerWidth, openDrawer }) => {
 			<Box sx={{ overflow: 'auto' }}>
 				<List component='nav'>
 					{Object.keys(router)
-						.filter((route) => route !== 'error')
+						.filter((route) => !['unauthorized', 'error', 'login', 'register'].includes(route))
 						.map((route) => (
 							<ListItem key={route}>
 								<ListItemButton component={Link} to={router[route].path} selected={location.pathname.indexOf(router[route].path) > -1}>

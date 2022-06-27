@@ -103,7 +103,7 @@ const DiscountComponent = ({ discount, selected, handleOpenDeleteDialog }) => {
 							letterSpacing: '5px',
 						}}
 					>
-						TAX EXEMPTED
+						VAT EXCLUSIVE
 					</Typography>
 				)}
 			</CardContent>
