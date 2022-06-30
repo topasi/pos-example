@@ -189,8 +189,15 @@ export const MenuProvider = ({ children }) => {
 			})
 			.catch(handleError)
 	}, [menu, keyword])
+	const value = {
+		menu,
+		handleCreateMenu,
+		handleUpdateMenu,
+		handleDeleteMenu,
+		handleSearchMenu,
+	}
 	return (
-		<MenuContext.Provider value={{ menu, handleCreateMenu, handleUpdateMenu, handleDeleteMenu, handleSearchMenu }}>
+		<MenuContext.Provider value={value}>
 			<SnackbarComponent open={snackbar.open} onClose={handleSnackbar} severity={snackbar.severity}>
 				{snackbar.message}
 			</SnackbarComponent>

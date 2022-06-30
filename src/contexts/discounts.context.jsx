@@ -114,8 +114,14 @@ export const DiscountsProvider = ({ children }) => {
 			})
 			.catch(handleError)
 	}, [discounts, keyword])
+	const value = {
+		discounts,
+		handleCreateDiscount,
+		handleDeleteDiscount,
+		handleSearchDiscount,
+	}
 	return (
-		<DiscountsContext.Provider value={{ discounts, handleCreateDiscount, handleDeleteDiscount, handleSearchDiscount }}>
+		<DiscountsContext.Provider value={value}>
 			<SnackbarComponent open={snackbar.open} onClose={handleSnackbar} severity={snackbar.severity}>
 				{snackbar.message}
 			</SnackbarComponent>

@@ -1,17 +1,20 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useTheme, useMediaQuery, styled, colors, Grid, Toolbar, Button, Box, Stack, InputAdornment, TextField, Avatar } from '@mui/material'
+import { useTheme, useMediaQuery, styled, colors, Grid, Toolbar, Button, Box, Stack, InputAdornment, TextField, Avatar, Typography, Menu, MenuItem, ListItemIcon, Divider } from '@mui/material'
 import MuiAppBar from '@mui/material/AppBar'
 import MenuIcon from '@mui/icons-material/Menu'
 import SearchIcon from '@mui/icons-material/Search'
 import CloseIcon from '@mui/icons-material/Close'
+import PersonIcon from '@mui/icons-material/Person'
+import LogoutIcon from '@mui/icons-material/Logout'
 
 import { router } from '../router'
-import brandFullWhite from '../assets/brand-full-white.png'
+import useAuth from '../hooks/useAuth'
 import useCategories from '../hooks/useCategories'
 import useDiscounts from '../hooks/useDiscounts'
 import useMenu from '../hooks/useMenu'
 import useOrders from '../hooks/useOrders'
+import brandFullWhite from '../assets/brand-full-white.png'
 
 const IconButton = styled(Button)(({ selected, theme }) => ({
 	minWidth: 0,
@@ -103,9 +106,11 @@ const AppBar = styled(MuiAppBar)(({ theme, open, width }) => ({
 const NavbarComponent = ({ drawerWidth, openDrawer, handleClickDrawer }) => {
 	const location = useLocation()
 	const theme = useTheme()
+	const { currentUser, handleLogout } = useAuth()
 	const matches = useMediaQuery(theme.breakpoints.down('md'))
 	const [openSearchBox, setOpenSearchBox] = useState(false)
 	const [openSearchIconButton, setOpenSearchIconButton] = useState(false)
+	const [anchorElUser, setAnchorElUser] = useState(null)
 	const { handleSearchCategory } = useCategories()
 	const { handleSearchDiscount } = useDiscounts()
 	const { handleSearchMenu } = useMenu()
@@ -132,6 +137,12 @@ const NavbarComponent = ({ drawerWidth, openDrawer, handleClickDrawer }) => {
 		if (router.orders.path === location.pathname) {
 			handleSearchOrder(keyword)
 		}
+	}
+	const handleOpenUserMenu = (e) => {
+		setAnchorElUser(e.currentTarget)
+	}
+	const handleCloseUserMenu = () => {
+		setAnchorElUser(null)
 	}
 	return (
 		<AppBar position='fixed' open={openDrawer} width={drawerWidth} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
@@ -228,7 +239,64 @@ const NavbarComponent = ({ drawerWidth, openDrawer, handleClickDrawer }) => {
 									<SearchIcon />
 								</IconButton>
 							)}
-							<Avatar sx={{ backgroundColor: 'background.default', color: 'primary.main' }}>R</Avatar>
+							<Box sx={{ flexGrow: 0 }}>
+								<IconButton
+									onClick={handleOpenUserMenu}
+									sx={{
+										padding: 0,
+									}}
+								>
+									<Avatar
+										sx={{
+											backgroundColor: 'background.default',
+											color: 'primary.main',
+										}}
+									>
+										{currentUser.displayName.charAt(0)}
+									</Avatar>
+								</IconButton>
+								<Menu
+									id='menu-appbar'
+									anchorEl={anchorElUser}
+									anchorOrigin={{
+										vertical: 'top',
+										horizontal: 'right',
+									}}
+									keepMounted
+									transformOrigin={{
+										vertical: 'top',
+										horizontal: 'right',
+									}}
+									open={Boolean(anchorElUser)}
+									onClose={handleCloseUserMenu}
+									sx={{
+										marginTop: '45px',
+										'& .MuiPaper-root': {
+											width: '175px',
+											borderRadius: '.5rem',
+										},
+									}}
+								>
+									<MenuItem onClick={handleCloseUserMenu}>
+										<ListItemIcon>
+											<PersonIcon fontSize='small' />
+										</ListItemIcon>
+										<Typography textAlign='center'>Profile</Typography>
+									</MenuItem>
+									<Divider />
+									<MenuItem
+										onClick={() => {
+											handleCloseUserMenu()
+											handleLogout()
+										}}
+									>
+										<ListItemIcon>
+											<LogoutIcon fontSize='small' />
+										</ListItemIcon>
+										<Typography textAlign='center'>Logout</Typography>
+									</MenuItem>
+								</Menu>
+							</Box>
 						</Stack>
 					</Grid>
 				</Grid>

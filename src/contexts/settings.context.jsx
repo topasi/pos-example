@@ -78,8 +78,12 @@ export const SettingsProvider = ({ children }) => {
 			})
 			.catch(handleError)
 	}, [settings, setSettings])
+	const value = {
+		settings,
+		handleCreateSettings,
+	}
 	return (
-		<SettingsContext.Provider value={{ settings, handleCreateSettings }}>
+		<SettingsContext.Provider value={value}>
 			<SnackbarComponent open={snackbar.open} onClose={handleSnackbar} severity={snackbar.severity}>
 				{snackbar.message}
 			</SnackbarComponent>

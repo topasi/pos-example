@@ -81,8 +81,13 @@ export const OrdersProvider = ({ children }) => {
 			})
 			.catch(handleError)
 	}, [orders, keyword])
+	const value = {
+		orders,
+		handleDeleteOrder,
+		handleSearchOrder,
+	}
 	return (
-		<OrdersContext.Provider value={{ orders, handleDeleteOrder, handleSearchOrder }}>
+		<OrdersContext.Provider value={value}>
 			<SnackbarComponent open={snackbar.open} onClose={handleSnackbar} severity={snackbar.severity}>
 				{snackbar.message}
 			</SnackbarComponent>

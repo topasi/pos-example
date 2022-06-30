@@ -112,8 +112,14 @@ export const CategoriesProvider = ({ children }) => {
 			})
 			.catch(handleError)
 	}, [categories, keyword])
+	const value = {
+		categories,
+		handleCreateCategory,
+		handleDeleteCategory,
+		handleSearchCategory,
+	}
 	return (
-		<CategoriesContext.Provider value={{ categories, handleCreateCategory, handleDeleteCategory, handleSearchCategory }}>
+		<CategoriesContext.Provider value={value}>
 			<SnackbarComponent open={snackbar.open} onClose={handleSnackbar} severity={snackbar.severity}>
 				{snackbar.message}
 			</SnackbarComponent>

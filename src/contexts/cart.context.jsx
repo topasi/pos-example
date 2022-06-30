@@ -316,8 +316,22 @@ export const CartProvider = ({ children }) => {
 			})
 			.catch(handleError)
 	}, [cart, cartId, cart.items, settings.vat, settings.serviceCharge])
+	const value = {
+		cart,
+		handleCreateCartItem,
+		handleIncreaseCartItemQty,
+		handleDecreaseCartItemQty,
+		handleDeleteCartItem,
+		handleResetCart,
+		handleCreateDiscount,
+		handleCreateOrder,
+		payment,
+		setPayment,
+		change,
+		setChange,
+	}
 	return (
-		<CartContext.Provider value={{ cart, handleCreateCartItem, handleIncreaseCartItemQty, handleDecreaseCartItemQty, handleDeleteCartItem, handleResetCart, handleCreateDiscount, handleCreateOrder, payment, setPayment, change, setChange }}>
+		<CartContext.Provider value={value}>
 			<SnackbarComponent open={snackbar.open} onClose={handleSnackbar} severity={snackbar.severity}>
 				{snackbar.message}
 			</SnackbarComponent>

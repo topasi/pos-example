@@ -9,13 +9,22 @@ import SettingsIcon from '@mui/icons-material/Settings'
 const router = {
 	login: {
 		name: 'Login',
-		icon: <DashboardIcon />,
 		path: '/',
 	},
 	register: {
 		name: 'Register',
-		icon: <DashboardIcon />,
 		path: '/register',
+	},
+	forgot: {
+		name: 'Forgot Password',
+		path: '/forgot-password',
+	},
+	reset: {
+		name: 'Reset Password',
+		path: '/reset-password',
+	},
+	action: {
+		path: '/action',
 	},
 	dashboard: {
 		name: 'Dashboard',
