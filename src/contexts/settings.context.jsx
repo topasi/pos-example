@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext } from 'react'
+import React, { useState, useEffect, useCallback, createContext } from 'react'
 import { ref, set, get, update } from 'firebase/database'
 import moment from 'moment'
 import { v4 as uuidv4 } from 'uuid'
@@ -20,18 +20,18 @@ export const SettingsProvider = ({ children }) => {
 		vat: 0,
 		serviceCharge: 0,
 	})
-	const handleError = (e) => {
-		console.log(e)
+	const handleError = (error) => {
+		console.log(error)
 		setSnackbar({
 			open: true,
 			severity: 'error',
 			message: 'Oops! something went wrong',
 		})
 	}
-	const handleSnackbar = () => {
+	const handleSnackbar = useCallback(() => {
 		setSnackbar((prev) => ({ ...prev, open: false }))
-	}
-	const handleCreateSettings = (values, setDisabled) => {
+	}, [])
+	const handleCreateSettings = useCallback((values, setDisabled) => {
 		values.id = uuidv4()
 		values.createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
 		values.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
@@ -68,7 +68,7 @@ export const SettingsProvider = ({ children }) => {
 				}
 			})
 			.catch(handleError)
-	}
+	}, [])
 	useEffect(() => {
 		get(ref(db, router.settings.path))
 			.then((snapshot) => {

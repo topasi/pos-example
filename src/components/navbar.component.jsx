@@ -159,7 +159,7 @@ const NavbarComponent = ({ drawerWidth, openDrawer, handleClickDrawer }) => {
 								marginRight: '1rem',
 							}}
 						>
-							<Link to='/'>
+							<Link to={router.dashboard.path}>
 								<img
 									src={brandFullWhite}
 									height='auto'

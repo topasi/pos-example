@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react'
+import React, { createContext, useState, useEffect, useCallback } from 'react'
 import { lowerCase } from 'lodash'
 import { ref, set, get, update, remove, query, orderByChild } from 'firebase/database'
 import { ref as sRef, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage'
@@ -22,15 +22,15 @@ export const MenuProvider = ({ children }) => {
 	const handleSnackbar = () => {
 		setSnackbar((prev) => ({ ...prev, open: false }))
 	}
-	const handleError = (e) => {
-		console.log(e)
+	const handleError = (error) => {
+		console.log(error)
 		setSnackbar({
 			open: true,
 			severity: 'error',
 			message: 'Oops! something went wrong',
 		})
 	}
-	const handleCreateMenu = (values, resetForm, setDisabled, setFiles, handleCloseMenuModal) => {
+	const handleCreateMenu = useCallback((values, resetForm, setDisabled, setFiles, handleCloseMenuModal) => {
 		values.id = uuidv4()
 		values.createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
 		values.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
@@ -63,8 +63,8 @@ export const MenuProvider = ({ children }) => {
 		} else {
 			storeData({ ...values, image: '' })
 		}
-	}
-	const handleUpdateMenu = (id, values, resetForm, setDisabled, setFiles, handleCloseMenuModal) => {
+	}, [])
+	const handleUpdateMenu = useCallback((id, values, resetForm, setDisabled, setFiles, handleCloseMenuModal) => {
 		get(ref(db, `${router.menu.path}/${id}`))
 			.then((snapshot) => {
 				if (snapshot.exists()) {
@@ -121,8 +121,8 @@ export const MenuProvider = ({ children }) => {
 				}
 			})
 			.catch(handleError)
-	}
-	const handleDeleteMenu = (id, setDeleteDialog) => {
+	}, [])
+	const handleDeleteMenu = useCallback((id, setDeleteDialog) => {
 		get(ref(db, `${router.menu.path}/${id}`))
 			.then((snapshot) => {
 				if (snapshot.exists()) {
@@ -159,10 +159,10 @@ export const MenuProvider = ({ children }) => {
 				}
 			})
 			.catch(handleError)
-	}
-	const handleSearchMenu = (keyword) => {
+	}, [])
+	const handleSearchMenu = useCallback((keyword) => {
 		setKeyword(lowerCase(keyword))
-	}
+	}, [])
 	useEffect(() => {
 		get(query(ref(db, router.menu.path), orderByChild('updatedAt')))
 			.then((snapshot) => {

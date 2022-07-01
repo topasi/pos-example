@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react'
+import React, { createContext, useState, useEffect, useCallback } from 'react'
 import { lowerCase } from 'lodash'
 import { ref, get, remove, query, orderByChild } from 'firebase/database'
 
@@ -19,15 +19,15 @@ export const OrdersProvider = ({ children }) => {
 	const handleSnackbar = () => {
 		setSnackbar((prev) => ({ ...prev, open: false }))
 	}
-	const handleError = (e) => {
-		console.log(e)
+	const handleError = (error) => {
+		console.log(error)
 		setSnackbar({
 			open: true,
 			severity: 'error',
 			message: 'Oops! something went wrong',
 		})
 	}
-	const handleDeleteOrder = (id, setDeleteDialog) => {
+	const handleDeleteOrder = useCallback((id, setDeleteDialog) => {
 		get(ref(db, `${router.orders.path}/${id}`))
 			.then((snapshot) => {
 				if (snapshot.exists()) {
@@ -51,10 +51,10 @@ export const OrdersProvider = ({ children }) => {
 				}
 			})
 			.catch(handleError)
-	}
-	const handleSearchOrder = (keyword) => {
+	}, [])
+	const handleSearchOrder = useCallback((keyword) => {
 		setKeyword(lowerCase(keyword))
-	}
+	}, [])
 	useEffect(() => {
 		get(query(ref(db, router.orders.path), orderByChild('updatedAt')))
 			.then((snapshot) => {

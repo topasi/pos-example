@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext } from 'react'
+import React, { useState, useEffect, createContext, useCallback } from 'react'
 import { lowerCase } from 'lodash'
 import { ref, set, get, remove, query, orderByChild, equalTo } from 'firebase/database'
 import moment from 'moment'
@@ -18,8 +18,8 @@ export const CategoriesProvider = ({ children }) => {
 	})
 	const [categories, setCategories] = useState([])
 	const [keyword, setKeyword] = useState('')
-	const handleError = (e) => {
-		console.log(e)
+	const handleError = (error) => {
+		console.log(error)
 		setSnackbar({
 			open: true,
 			severity: 'error',
@@ -29,7 +29,7 @@ export const CategoriesProvider = ({ children }) => {
 	const handleSnackbar = () => {
 		setSnackbar((prev) => ({ ...prev, open: false }))
 	}
-	const handleCreateCategory = (values, setErrors, resetForm, setDisabled) => {
+	const handleCreateCategory = useCallback((values, setErrors, resetForm, setDisabled) => {
 		values.id = uuidv4()
 		values.createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
 		values.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
@@ -53,8 +53,8 @@ export const CategoriesProvider = ({ children }) => {
 				}
 			})
 			.catch(handleError)
-	}
-	const handleDeleteCategory = (id, setDeleteDialog) => {
+	}, [])
+	const handleDeleteCategory = useCallback((id, setDeleteDialog) => {
 		get(ref(db, `${router.categories.path}/${id}`))
 			.then((snapshot) => {
 				if (snapshot.exists()) {
@@ -78,10 +78,10 @@ export const CategoriesProvider = ({ children }) => {
 				}
 			})
 			.catch(handleError)
-	}
-	const handleSearchCategory = (keyword) => {
+	}, [])
+	const handleSearchCategory = useCallback((keyword) => {
 		setKeyword(lowerCase(keyword))
-	}
+	}, [])
 	useEffect(() => {
 		get(query(ref(db, router.categories.path), orderByChild('createdAt')))
 			.then((snapshot) => {

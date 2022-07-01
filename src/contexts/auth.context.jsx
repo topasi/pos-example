@@ -86,6 +86,7 @@ export const AuthProvider = ({ children }) => {
 					.catch((error) => {
 						switch (error.code) {
 							case 'auth/invalid-email':
+							case 'auth/user-not-found':
 								setErrors({
 									email: 'The email address invalid',
 								})
@@ -268,7 +269,6 @@ export const AuthProvider = ({ children }) => {
 	}, [])
 	useEffect(() => {
 		const unsubscribe = onAuthStateChanged(auth, (user) => {
-			console.log('currentUser', user)
 			setCurrentUser(user)
 			setLoading(false)
 		})

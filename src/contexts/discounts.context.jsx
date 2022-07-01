@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext } from 'react'
+import React, { useState, useEffect, useCallback, createContext } from 'react'
 import { lowerCase } from 'lodash'
 import { ref, set, get, remove, query, orderByChild, equalTo } from 'firebase/database'
 import moment from 'moment'
@@ -18,8 +18,8 @@ export const DiscountsProvider = ({ children }) => {
 	})
 	const [discounts, setDiscounts] = useState([])
 	const [keyword, setKeyword] = useState('')
-	const handleError = (e) => {
-		console.log(e)
+	const handleError = (error) => {
+		console.log(error)
 		setSnackbar({
 			open: true,
 			severity: 'error',
@@ -29,7 +29,7 @@ export const DiscountsProvider = ({ children }) => {
 	const handleSnackbar = () => {
 		setSnackbar((prev) => ({ ...prev, open: false }))
 	}
-	const handleCreateDiscount = (values, setErrors, resetForm, setDisabled) => {
+	const handleCreateDiscount = useCallback((values, setErrors, resetForm, setDisabled) => {
 		values.id = uuidv4()
 		values.createdAt = moment().format('YYYY-MM-DD HH:mm:ss')
 		values.updatedAt = moment().format('YYYY-MM-DD HH:mm:ss')
@@ -55,8 +55,8 @@ export const DiscountsProvider = ({ children }) => {
 				}
 			})
 			.catch(handleError)
-	}
-	const handleDeleteDiscount = (id, setDeleteDialog) => {
+	}, [])
+	const handleDeleteDiscount = useCallback((id, setDeleteDialog) => {
 		get(ref(db, `${router.discounts.path}/${id}`))
 			.then((snapshot) => {
 				if (snapshot.exists()) {
@@ -80,10 +80,10 @@ export const DiscountsProvider = ({ children }) => {
 				}
 			})
 			.catch(handleError)
-	}
-	const handleSearchDiscount = (keyword) => {
+	}, [])
+	const handleSearchDiscount = useCallback((keyword) => {
 		setKeyword(lowerCase(keyword))
-	}
+	}, [])
 	useEffect(() => {
 		get(query(ref(db, router.discounts.path), orderByChild('createdAt')))
 			.then((snapshot) => {

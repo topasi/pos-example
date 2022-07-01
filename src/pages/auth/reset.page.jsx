@@ -189,7 +189,7 @@ const ResetPage = () => {
 										size='large'
 										type='submit'
 										disableElevation
-										disabled={disabled}
+										disabled={disabled || feedback?.code === 'auth/internal-error'}
 										endIcon={
 											disabled && (
 												<CircularProgress

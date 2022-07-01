@@ -42,8 +42,8 @@ export const CartProvider = ({ children }) => {
 	const handleSnackbar = () => {
 		setSnackbar((prev) => ({ ...prev, open: false }))
 	}
-	const handleError = (e) => {
-		console.log(e)
+	const handleError = (error) => {
+		console.log(error)
 		setSnackbar({
 			open: true,
 			severity: 'error',
